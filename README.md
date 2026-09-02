@@ -59,7 +59,7 @@ Partially, in three traditions that have never been joined up.
 
 **Rights and registration formats** — CWR, DDEX (MWL/MWN for work licensing and notification, RDR-N for royalty reporting), MLC bulk registration, ICE, CIS-Net. These carry rights data and no music.
 
-**Legal deposit** — the oldest answer and the most instructive. US copyright registration historically required a deposit copy, usually a lead sheet. The courts have already had to rule on what the actual artefact of a musical work is, and in *Skidmore v. Led Zeppelin* (9th Cir. 2020, en banc) the answer was: the scope of the copyright is the deposit copy, not the famous recording. The legal system's manifestation of a musical work is a piece of paper in an archive.
+**Legal deposit** — the oldest answer and the most instructive. US copyright registration historically required a deposit copy, usually a lead sheet. The courts have already had to rule on what the actual artefact of a musical work is, and in *Skidmore v. Led Zeppelin* (9th Cir. 2020, en banc) the answer was: for works registered under the 1909 Act, the scope of the copyright is the deposit copy, not the famous recording. The legal system's manifestation of a musical work is a piece of paper in an archive.
 
 **Attempts to merge the three have a graveyard.** The International Music Joint Venture (1998–2001) dissolved without opening an office. WIPO's International Music Registry (2011) collapsed in industry infighting. The Global Repertoire Database (2008–2014) had thirteen CMOs, Google and Apple on board, and folded when committed investment was withdrawn. dotBlockchain Media tried to define a file format carrying rights alongside audio and became Verifi Media. Open Music Initiative, Mediachain and Ujo are gone. Blokur survives.
 
@@ -107,7 +107,7 @@ Tooling doesn't recognise the extension out of the box, so it has to be told: [.
 
 The rights data — every party, every split, every agreement, every territory — is **10 to 100 KB**. A reference WAV is **30 to 60 MB**. The audio is 99.9% of the package.
 
-So the manifest doesn't contain the audio. It contains a **digest** and a list of **locators**:
+So the manifest doesn't contain the audio. It contains a **digest** and a list of **locators** — annotated here for clarity, though a real `.work` file carries no comments:
 
 ```jsonc
 {
@@ -405,7 +405,7 @@ Modelled against CWR (v2.1 rev 8 / v2.2) so data can be delivered to societies w
 erDiagram
     MUSICAL_WORK ||--o{ WORK_CREDIT : "has"
     INTERESTED_PARTY ||--o{ WORK_CREDIT : "holds"
-    WORK_CREDIT ||--o{ TERRITORY_CLAIM : "SPT / OPT / SWT / OWT"
+    WORK_CREDIT ||--o{ TERRITORY_CLAIM : "SPT / OPT / SWT"
     WORK_CREDIT ||--o{ PUBLISHER_FOR_WRITER : "writer side (PWR)"
     WORK_CREDIT ||--o{ PUBLISHER_FOR_WRITER : "publisher side (PWR)"
     AGREEMENT ||--o{ WORK_CREDIT : "governs (AGR)"
@@ -416,6 +416,8 @@ erDiagram
     MUSICAL_WORK ||--o{ WORK_REGISTRATION : "is registered by"
     SOCIETY ||--o{ WORK_REGISTRATION : "acknowledges (ACK)"
     MUSICAL_WORK ||--o{ SOUND_RECORDING : "is evidenced by (REC)"
+    MUSICAL_WORK ||--o{ RENDER : "is rendered as"
+    MANDATE ||--o{ RENDER : "permits"
     MUSICAL_WORK ||--o{ LICENCE : "is licensed under"
     MANDATE ||--o{ LICENCE : "authorises"
 
@@ -482,10 +484,10 @@ erDiagram
         uuid id PK
         uuid interested_party_id FK
         string rights "PR | MR | SR"
-        string use_classes "sync | ad | game | ai_training"
+        string use_classes "sync | ad | game | ai_rendering"
         int tis_code
         int rate_floor_minor_units
-        string exclusions
+        string exclusions "political | tobacco | ai_training"
     }
 
     WORK_RELATION {
@@ -515,6 +517,17 @@ erDiagram
         uuid musical_work_id FK
         string isrc
         int duration_ms
+    }
+
+    RENDER {
+        uuid id PK
+        uuid musical_work_id FK
+        uuid mandate_id FK
+        string style_prompt
+        string engine "model and version"
+        string isrc
+        float melody_similarity "round-trip check against source"
+        bool human_in_loop "bears on whether the master is protectable"
     }
 
     LICENCE {
