@@ -1,0 +1,2 @@
+# Linguist doesn't know the .work extension; without this GitHub renders it as plain text.
+*.work linguist-language=JSON

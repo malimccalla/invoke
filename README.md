@@ -1,7 +1,7 @@
 # INVOKE
 
 > **This repository is the static landing page and the thinking behind it.**
-> A single `index.html` plus `robots.txt`, and this README — which is a working design document and brainstorm, not a spec. Nothing here is the product.
+> A single `index.html` plus `robots.txt`, this README — a working design document, not a spec — and [example.work](example.work), a complete worked example of the proposed format. Nothing here is the product.
 >
 > **The publishing administration platform is a work in progress being built at [github.com/malimccalla/invoke-works](https://github.com/malimccalla/invoke-works)** as a separate Python / FastAPI project.
 
@@ -69,28 +69,313 @@ The pattern is unambiguous and worth stating plainly: **every attempt at a singl
 
 Not a global database. A **work package**: a signed, content-addressed, versioned artefact that one party can produce, hold and hand to another, and which is useful on its own from day one.
 
-```
-work-package/
-  manifest.json        # identity: ISWC, internal ID, canonical hash, version, signatures
-  work.json            # titles, language, duration, version type, derivation
-  content/
-    score.musicxml     # or MEI — the notated composition
-    melody.mid         # normalised melodic line + harmonic reduction
-    lyrics.txt         # timestamped where available
-  rights/
-    parties.json       # interested parties, IPI, society affiliation
-    splits.json        # ownership + collection shares, per right, per territory
-    agreements/        # chain of title, term, retention, post-term collection
-    clearances/        # samples, interpolations, derivations, evidence
-  mandates/            # per-party licensing authority and terms
-  evidence/
-    reference.wav      # a recording, as evidence, not as the work
-  provenance.jsonl     # append-only log of every assertion and who made it
-```
+It carries four things — the **identity** of the work, the **musical content** that anchors it, the **rights graph** that makes it commercial, and the **provenance** that makes every assertion in it attributable.
 
 The useful analogues are outside music. An **SBOM** (SPDX/CycloneDX) is a machine-readable bill of materials for an intangible composite. An **OCI image manifest** gives content-addressed identity to something assembled from layers. **C2PA content credentials** attach signed provenance to media. A **git commit** gives verifiable, replayable history of who changed what.
 
 The honest caveat, stated in the design rather than papered over: **you cannot fully represent a musical work, because its legal boundary is deliberately undefined.** Substantial similarity is decided by a jury, not a schema. So the artefact is not the work. It is a *verifiable, versioned, attributable claim about* the work, with the musical content attached so the claim is anchored to something rather than floating free. That is exactly what a deposit copy does, and exactly what CWR does not.
+
+---
+
+## The `.work` file
+
+See [example.work](example.work) for a complete, valid one.
+
+### You are not inventing a file format
+
+That phrase sounds like it needs an authority. It doesn't. A format is three things: an agreed byte layout, a filename convention, and software that reads it.
+
+| Thing | What it actually is |
+| --- | --- |
+| `package.json` | JSON, a schema, and a filename everyone agreed on |
+| Git LFS pointer | three lines of text — version, `oid sha256:…`, `size` |
+| `.dvc` | tiny YAML holding an md5 and a path |
+| `.torrent` | small dict of filenames, sizes and piece hashes |
+| OCI image manifest | JSON listing `mediaType` + `digest` + `size` per layer |
+| `.ipynb`, `.geojson`, `.webmanifest`, `.har` | JSON with a custom extension, because the extension carries meaning |
+| `.docx`, `.epub`, `.jar` | a **zip** with a defined internal layout |
+
+`.work` is a JSON document conforming to a published JSON Schema (`https://invoke.works/schema/work/v1`), with a filename convention. Nobody's permission is required. If it is ever worth registering `application/vnd.invoke.work+json` with IANA, that is a form submission in the vendor tree, not a standards battle.
+
+Strict JSON, deliberately — no comments, no trailing commas, no YAML. The manifest has to be canonicalisable (RFC 8785) so that signatures are stable across re-serialisation, and anything that permits two byte representations of the same document breaks that.
+
+**And it should not be called `.json`.** The extension is the type signal — it tells a human what they've been sent, tells an OS which application to open it with, tells a validator which schema to apply, and gives editors something to bind syntax and completion to. `.ipynb` is JSON. `.geojson` is JSON. `.webmanifest` is JSON. Naming a file by its serialisation instead of its meaning throws away the only information the filename could have carried.
+
+Tooling doesn't recognise the extension out of the box, so it has to be told: [.gitattributes](.gitattributes) maps `*.work` to JSON for GitHub's Linguist, and [.vscode/settings.json](.vscode/settings.json) does the same for the editor. Two lines each, and the file highlights and diffs properly everywhere.
+
+### Size is what drives the design
+
+The rights data — every party, every split, every agreement, every territory — is **10 to 100 KB**. A reference WAV is **30 to 60 MB**. The audio is 99.9% of the package.
+
+So the manifest doesn't contain the audio. It contains a **digest** and a list of **locators**:
+
+```jsonc
+{
+  "role": "reference_recording",
+  "media_type": "audio/wav",
+  "digest": "sha256:0ad3f81b…",       // authoritative
+  "size": 48210944,
+  "locators": [                        // advisory, tried in order, all verified against the digest
+    "https://cdn.invoke.works/blobs/sha256/0ad3f81b",
+    "s3://mali-mccalla-archive/salt-water/reference.wav",
+    "ipfs://bafybeigdyrzt5sfp7udm…"
+  ]
+}
+```
+
+The digest is the truth; the location is a hint. INVOKE can host it, the writer can host it, a publisher can mirror it, and all three verify identically. **Design constraint 3 — the canonical copy stays with the rightsholder — falls out of the format for free.**
+
+### `.work` and `.workpkg` are not the same thing
+
+Worth being precise here, because it's easy to get the analogy backwards:
+
+| | Contains | Size | Analogue |
+| --- | --- | --- | --- |
+| **`.work`** | manifest only — identity, rights, digests, locators, signatures | kilobytes | **`.torrent`**, OCI image manifest, Git LFS pointer |
+| **`.workpkg`** | manifest **plus every referenced blob**, zipped | tens of megabytes | `docker save`, `.epub`, a Git bundle |
+
+A `.torrent` is the *small pointer file*, not the payload — which makes it the analogue of **`.work`**, not `.workpkg`. `.workpkg` is the "download everything and put it in a box" artefact: a zip with a defined layout, for archival, offline handoff, or attaching to a deal.
+
+### Why a file at all, rather than a database row
+
+Because a file can be emailed, archived, attached to a contract as an exhibit, kept on a drive for thirty years, and **verified with no server and no company still being alive**. A database row is a claim made by one party's infrastructure. A signed file is portable evidence.
+
+And because it diffs. A `.work` file in a git repository turns a change of splits into a reviewable pull request — chain of title as version control.
+
+### What the example demonstrates
+
+[example.work](example.work) is a deliberately awkward song, because the easy cases prove nothing. It is `version: 3` of a work with a `parent` digest, and it exercises every correction listed further down this document:
+
+- **Two writers, only one controlled.** Mali McCalla is `SWR`; June Okonkwo is `OWR` with her own publisher. Ownership totals exactly `10000` bps for PR, MR and SR independently.
+- **A real `publisher_for_writer` chain**, so each writer's share has somewhere to flow.
+- **A German sub-publisher with zero ownership and full collection** in that territory — expressed as `World / include` minus `Germany / exclude` on the original publisher, and `Germany / include` on the sub-publisher. This is the include/exclude TIS machinery doing the job an ISO country array cannot.
+- **Every credit is time-bounded**, and agreements carry `retention_end_date` and `post_term_collection_end_date` separately from `end_date`.
+- **A cleared interpolation** of another work, with the clearance document referenced by digest rather than described in prose.
+- **A split registration outcome** — PRS accepted (`AS`), the MLC returned a conflict (`CO`) with an overclaim message. Both are data, neither is an error.
+- **`clearability` computed to 5000 bps and `one_stop: false`**, naming the two specific parties blocking an instant sync grant.
+- **A gospel render** in `renders[]` with its own ISRC, citing the `mandate_id` that permitted it, a `melody_similarity` of `0.94` against the source melody, and an explicit note that the master's own copyright is thin.
+- **A provenance trail showing a Whisper transcription at confidence `0.72` being corrected by a human**, then the rights being attested. Derived, then contested, then signed.
+
+---
+
+## Projections
+
+A `.work` file is not a delivery format. It is the source that delivery formats are generated from. Each output is a **projection** — a lossy view of the document, shaped for one recipient:
+
+| Projection | Recipient | Purpose |
+| --- | --- | --- |
+| **CWR** `NWR` / `REV` | PROs, mechanical societies | registration |
+| **Lead sheet** | US Copyright Office | statutory deposit copy |
+| **DDEX MWL / MWN** | licensees, DSPs | work licensing and notification |
+| **Licence instrument** | a counterparty | a grant, with the split state it was made against |
+| **Royalty statement** | payees | settlement against a versioned split |
+| **Rendering** | anyone | a new recording of the work (below) |
+
+### CWR
+
+The registration case is the one that has to work, so it's worth showing concretely. [example.work](example.work) projects to roughly this. Field order is illustrative — the real thing is fixed-width with exact column offsets from the CISAC spec.
+
+```
+HDR  PB  00555000111  INVOKE PUBLISHING LTD           01.10  20260504 090000
+GRH  NWR  00001  02.10
+  NWR  work#=01J8QK3M…  SALT WATER  T0345246801  EN  000333
+       MOD  POP  recorded=Y  MTX  arr=ORI  lyr=ORI  grand_rights=N
+    SPU  seq=01  00555000111  INVOKE PUBLISHING LTD   type=E
+         pr 044/02500   mr 044/02500   sr 044/02500
+      SPT  tis=2136  I  02500 02500 02500
+      SPT  tis=0276  E  00000 00000 00000
+    SPU  seq=02  00777888999  EDITION NORDLICHT GMBH  type=SE
+         pr 035/00000   mr 035/00000   sr 035/00000
+      SPT  tis=0276  I  02500 02500 02500
+    SWR  00123456789  MCCALLA / MALI  designation=CA
+         pr 044/02500   mr 044/02500   sr 044/02500
+      SWT  tis=2136  I  02500 02500 02500
+      PWR  00555000111  INVOKE PUBLISHING LTD  agreement=agr-001
+    OPU  seq=01  00444333222  WEST PIER SONGS INC  type=E   pr 010/02500 …
+    OWR  00987654321  OKONKWO / JUNE  designation=CA        pr 010/02500 …
+    ALT  SALTWATER      type=AT
+    ALT  AGUA SALADA    type=TE  ES
+    VER  HARBOUR LIGHTS  T0104021179
+    REC  GBAAA2600137  000333
+GRT  00001  transactions=1  records=…
+TRL  groups=1  transactions=1  records=…
+```
+
+**The basis points pay off exactly here.** CWR share fields are five digits with two implied decimals, `00000` to `10000`. `ownership_bps: 2500` becomes `02500` — no scaling, no conversion, no rounding. The choice was made for float-safety and turns out to be the native wire encoding.
+
+Note the German sub-publishing deal surviving the projection intact: `World / include`, then `Germany / exclude` on the original publisher, then `Germany / include` on the sub-publisher. Three `SPT` records expressing something an ISO country array structurally cannot.
+
+The remaining gaps are small. `HDR` needs sender credentials, which are account configuration rather than work data. Each society needs its own file with its own recipient code. Language maps ISO 639-2 → 639-1 (`eng` → `EN`), and duration truncates from milliseconds to `HHMMSS`.
+
+### The projection is lossy in one direction only
+
+Everything CWR needs is in the `.work` file. Much of the `.work` file has nowhere to go in CWR:
+
+| In `.work` | Home in CWR |
+| --- | --- |
+| `clearances` — the interpolation licence and its terms | none |
+| `mandates` — who has authorised what licensing | none |
+| `clearability` — coverage in bps and the named gaps | none |
+| `content` — melody, harmony, lyrics, score digests | none |
+| `signatures`, `timestamps`, `provenance_log` | none |
+| the version chain and per-component priority | none |
+
+CWR can express *who owns what*. It cannot express *what the song is*, *who may license it*, *what it was derived from*, or *who asserted any of it and when*. So `.work` → CWR is a projection; CWR → `.work` recovers perhaps a third of the document.
+
+That asymmetry is the entire argument for the format existing.
+
+---
+
+## Priority, versioning and deposit
+
+Two requirements that look contradictory: *prove this existed on 1 March*, and *let me rewrite verse 2 in June*.
+
+### Never mutate. Append.
+
+```
+work 01J8QK…                          ← stable identity, never changes
+  ├── v1  sha256:aaa…  ts 2026-03-01   parent: —
+  ├── v2  sha256:bbb…  ts 2026-04-12   parent: aaa    verse 2 lyrics rewritten
+  └── v3  sha256:ccc…  ts 2026-06-30   parent: bbb    bridge added
+```
+
+The work is mutable. Its *states* are immutable and ordered. `v3` is current; `v1` still proves what existed in March.
+
+**Per-component digests give per-element priority.** Because each piece of content is addressed separately, an unchanged component keeps a byte-identical digest across versions. If the lyrics changed between v1 and v3 but `melody` hashes the same throughout, that is cryptographic proof the melody dates to March — even though the song was edited twice since. Disputes are usually about the hook, so that is exactly the evidence worth having. **A single hash over the whole package would destroy this property.**
+
+It also resolves [model correction 6](#model-corrections) for nothing: "the split as at the usage date" is just whichever version was current on that date.
+
+### How deposit actually works
+
+**UK** — copyright is automatic on fixation (CDPA 1988 s.3(2)). There is **no UK copyright register at all**. The only thing that exists is evidence of date and authorship. "Poor man's copyright" — posting yourself a sealed envelope — is folklore; the IPO's own guidance is that it proves very little.
+
+**US** — automatic too, but registration carries real consequences:
+
+- It is a **prerequisite to filing an infringement suit** (*Fourth Estate v. Wall-Street.com*, 2019 — the granted registration, not merely the application)
+- **Timely** registration unlocks **statutory damages and attorney's fees** (17 U.S.C. §412), which is the reason anyone actually does it
+- §410(c) gives a prima facie presumption of validity
+- The Office records an **effective date of registration** — so yes, it is timestamped by a government agency, and that timestamp has legal weight
+
+### What a cryptographic timestamp does and does not do
+
+It proves **a specific set of bytes existed at time T**. It does **not** prove authorship or originality. It is strong for rebutting "you took that from me," and useless for proving you didn't take it from someone else. Corroborating, never dispositive.
+
+**This is also what settles the blockchain question.** Under **eIDAS Article 41**, a qualified electronic timestamp carries a legal *presumption* of date accuracy and data integrity. A blockchain anchor carries no such presumption in any jurisdiction. So an RFC 3161 timestamp is simultaneously cheaper, simpler and legally stronger than a chain — and a public append-only ledger full of writers' names and contact details is a GDPR erasure problem nobody wants to own.
+
+Layered cheapest first:
+
+| Mechanism | Cost | Strength |
+| --- | --- | --- |
+| Git commits, pushed to a remote | free | weak — `--date` is trivially forged, but the remote corroborates |
+| **RFC 3161 qualified timestamp** | pennies | **eIDAS presumption of date and integrity — the recommendation** |
+| Sigstore / Rekor transparency log | free | publicly auditable inclusion proof |
+| OpenTimestamps → Bitcoin anchor | free | public anchor, no wallet or token, no legal presumption |
+| US Copyright Office registration | ~$45 | the only one that unlocks statutory damages |
+
+### Automate deposit, don't replace it
+
+Nothing cryptographic substitutes for §412. So the work package doesn't compete with legal deposit — it **emits** it. One artefact, four outputs:
+
+- a **CWR** file for PROs and mechanical societies
+- an **MLC** registration
+- a **US Copyright Office** application with a generated lead-sheet deposit copy
+- a **timestamped archival record** of the exact state at that moment
+
+Which closes a loop with the section above. *Skidmore* held that the deposit copy defines the scope of protection. If the lead sheet is generated from an extracted melody, **the machine transcription becomes legally consequential** — a bad transcription literally narrows the rights it was meant to protect. Which is precisely why derived data may never be asserted as fact without a human attesting to it.
+
+---
+
+## Automated work packaging
+
+A submission arrives as an audio file plus a filled-in form. How much of the package can be built without a human?
+
+### Derivable from audio
+
+| Layer | Approach |
+| --- | --- |
+| Recording identity | Chromaprint / AcoustID fingerprint; ACRCloud or Pex for commercial coverage |
+| Work identity (covers, versions) | Cover-song identification — CREMA/Qmax alignment, ByteCover-class embeddings, Da-TACOS as benchmark |
+| Stem isolation | Demucs — prerequisite for everything below |
+| Melody → MIDI | `basic-pitch` for polyphonic transcription, CREPE for monophonic f0 on the isolated vocal |
+| Harmony | madmom / Chordino chord estimation → harmonic reduction |
+| Key, tempo, metre | librosa / Essentia |
+| Lyrics + timing | Whisper large-v3 on the isolated vocal, WhisperX for forced alignment |
+| Structure | segmentation into verse / chorus / bridge — useful for excerpt licensing |
+| Sample detection | fingerprint against a reference corpus. Interpolations need the cover-ID path and remain genuinely hard |
+
+### Not derivable, ever
+
+Writer identities. IPI numbers. **Splits.** Publisher and admin chain. Territory deals. Whether a clearance actually exists. Whether the submitter had the authority to submit at all.
+
+This is the honest line through the whole system, and it maps cleanly onto the FRBR framing above: **audio yields the content tier for free; the rights tier is irreducibly declared.**
+
+### Draft until attested
+
+```
+submission ──▶ parse form ──▶ analyse audio ──▶ DRAFT package
+                                                    │
+                                          human review + correction
+                                                    │
+                                                    ▼
+                                            ATTESTED package ──▶ sign ──▶ timestamp ──▶ register
+```
+
+Every derived field carries a confidence score and a provenance entry naming the model and version that produced it — `invoke:pipeline/basic-pitch@0.4.0`, confidence `0.87`, derived from a named blob digest. A package stays `draft` until a party with standing signs it. Nothing machine-generated is ever presented as a fact.
+
+The `mailto:` form on the landing page is currently the de-facto intake schema. It is a stopgap: a real web form emitting JSON directly is the intended surface, because parsing prose into a rights graph is exactly where you don't want ambiguity.
+
+---
+
+## Rendering
+
+The previous section goes audio → `.work`. This one goes the other way, and it is where the thesis stops being a slogan.
+
+### The recording as a build artifact
+
+A `.work` file carries `melody.mid`, a harmonic reduction, timed lyrics, structure, key and tempo. That is not an approximation of the input contract for music generation — **it is the input contract.** Singing voice synthesis (DiffSinger, NNSVS, Synthesizer V, ACE Studio) takes a MIDI melody plus phoneme-aligned lyrics. Melody-conditioned generation (MusicGen-melody, Stable Audio) takes a chromagram plus a text prompt. The file already holds both.
+
+So a recording becomes a **render target**:
+
+```
+work 01J8QK… v3
+   ├── render(style="gospel choir, live room, 72bpm")      ──▶  ISRC GBAAA2600214
+   ├── render(style="uk drill, 140bpm, sparse")           ──▶  ISRC GBAAA2600215
+   └── render(style="bossa nova, nylon guitar, intimate")  ──▶  ISRC GBAAA2600216
+
+same work_id · same ISWC · same splits · three new masters
+```
+
+The work is source; the recording is a build. Compiling one source for three architectures.
+
+This is also just FRBR, arriving on time. Each render is a new **Expression** of the same **Work** — the library scientists modelled this in 1998, long before it was mechanically possible.
+
+**And it is only possible because `.work` has a content tier.** CWR cannot do this. A registration message describes ownership of a song it cannot itself represent. The melody and lyrics earn their place in the package twice: once as the legal deposit copy, once as generative input.
+
+### Why this matters commercially
+
+The honest near-term use is not replacing records. It's **pitching**.
+
+A songwriter pitching to an artist needs the song heard in that artist's idiom, which today means paying for a demo per target. With a `.work` file you render one per pitch at the cost of inference. The catalogue becomes explorable in a way a folder of MP3 demos never is — *show me every work in the catalogue as a mid-tempo gospel ballad*.
+
+Which is the thesis made literal. If any work can become any recording on demand, the recording was never the scarce thing.
+
+### What it does to the rights graph
+
+Nothing — and that's the point of separating work from recording in the first place.
+
+A render produces a **new sound recording**: new master, new ISRC, new P-line. The **work is untouched**: same ISWC, same writers, same splits, same agreements. The rights graph does not fork. Only the recording tier multiplies.
+
+Three caveats that belong in the design rather than the marketing:
+
+**Authorship of the render is thin or absent.** The US Copyright Office's 2023 guidance and *Thaler v. Perlmutter* are clear that output without human authorship is not copyrightable. UK CDPA s.9(3) assigns computer-generated works to whoever made the arrangements for their creation, but that provision is contested and has been under review. Either way the *work* remains fully protected — only the new master may be weak. For a pitch demo, nobody cares. For a commercial release, a human needs to be meaningfully in the loop.
+
+**A substantial arrangement is an arrangement.** If a person materially reworks the harmony or structure for the gospel version, that is an `AR` credit with a potential claim, and belongs in the rights graph as a credit on a derived work. If a model did it unaided, probably not. Model the relationship regardless — `WorkRelation` already exists for this.
+
+**Consent is not assumed, it is a field.** [example.work](example.work) gates this in `mandates`, and the distinction matters: **`ai_training` and `ai_rendering` are different permissions.** Training a model *on* the work is not the same as synthesising a performance *of* the work. A writer may reasonably permit the second and refuse the first. Voice is separate again — rendering must not clone an identifiable artist's voice without consent, per the ELVIS Act (Tennessee, 2024) and the proposed NO FAKES Act.
+
+### Round-tripping as a quality check
+
+A melody extracted at `0.87` confidence and then re-rendered will drift. Usefully, the pipeline can check itself: extract the melody back out of the render and compare it to `content.melody`. Low similarity means either the render wandered off the song or the original transcription was wrong. Both are worth knowing before anything is deposited or registered.
 
 ---
 
@@ -106,8 +391,9 @@ Deliberately narrow. Publishing only.
 - Rights clearance — samples, interpolations, derivatives, medleys
 - Programmatic licensing against known mandates
 - Royalty accounting and settlement
+- Rendering works into recordings, gated by writer consent
 
-Sound recordings appear only as *evidence of* a work, never as the primary entity.
+Sound recordings appear only as *evidence of* a work or as a *render target* — never as the primary entity.
 
 ---
 
@@ -306,6 +592,8 @@ The earlier draft of this schema had real defects. They are listed here because 
 
 **14 — No merge strategy for parties without an IPI.** A nullable unique IPI permits unlimited duplicates of unregistered writers. Needs a `canonical_party_id` and an explicit merge path — because most new writers do not have an IPI yet, and onboarding them is the actual product.
 
+**15 — Writer names were a single string.** Found while mapping the model onto CWR, which has separate Last Name and First Name fields for natural persons. Storing `"McCalla, Mali"` and splitting on the comma breaks on mononyms, on suffixes, and on every name where the family name isn't positionally obvious — which is most of the world. Natural persons need structured `last_name` / `first_name`; legal entities keep a single name field.
+
 ---
 
 ## Programmatic licensing
@@ -393,12 +681,13 @@ Learned from the graveyard above, and non-negotiable:
 2. **Speak the existing standards fluently — CWR, DDEX, ISWC, IPI, TIS.** Interoperate, don't replace. The replacements are the ones that died.
 3. **The canonical copy stays with the rightsholder.** No central authority. Federate, verify, reconcile.
 4. **Every assertion is attributable and reversible.** Provenance is append-only; conflicts are data, not errors.
+5. **Derived data is never asserted as fact.** Machine-extracted melody, lyrics and structure carry a confidence and a named producer, and stay `draft` until a party with standing signs them.
 
 ---
 
 ## Status
 
-Early. Public page live, data model in its second iteration, API in progress at [invoke-works](https://github.com/malimccalla/invoke-works). This repository stays the landing page and the design notes.
+Early. Public page live, data model in its second iteration, `.work` format drafted, API in progress at [invoke-works](https://github.com/malimccalla/invoke-works). This repository stays the landing page and the design notes.
 
 Contact: `mali@invoke.works`
 

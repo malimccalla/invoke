@@ -1,0 +1,449 @@
+{
+  "$schema": "https://invoke.works/schema/work/v1",
+  "spec_version": "1.0.0",
+
+  "work_id": "01J8QK3M2N4P5R6S7T8V9WXYZA",
+  "version": 3,
+  "parent": "sha256:bb17c0f4e0d2a9573c8e1f4a6d90b2e57c41af38d6b0e29c4f7a1d8e35b962c0",
+  "created_at": "2026-06-30T14:22:08Z",
+  "status": "attested",
+
+  "identity": {
+    "iswc": "T-034.524.680-1",
+    "title": "Salt Water",
+    "alternative_titles": [
+      { "title": "Saltwater", "type": "alternate_spelling" },
+      { "title": "Agua Salada", "type": "translation", "language": "spa" }
+    ],
+    "language": "eng",
+    "duration_ms": 213480,
+    "version_type": "MOD",
+    "music_arrangement": "ORI",
+    "lyric_adaptation": "ORI",
+    "distribution_category": "POP",
+    "text_music_relationship": "MTX",
+    "composite_type": null,
+    "excerpt_type": null,
+    "recorded_indicator": true,
+    "grand_rights_ind": false,
+    "created_year": 2026
+  },
+
+  "content": [
+    {
+      "role": "melody",
+      "media_type": "audio/midi",
+      "digest": "sha256:9f2a4c7e18b03d6591ae72cf40d8b135e6a97c02d4f81b6e3a05cd97124fe8ab",
+      "size": 8421,
+      "derived": true,
+      "locators": ["https://cdn.invoke.works/blobs/sha256/9f2a4c7e"]
+    },
+    {
+      "role": "harmony",
+      "media_type": "application/json",
+      "digest": "sha256:31c6b90de742f5a8103e6c94bb27d0f5a8e41c73920db6fe5847ac03e19d24b7",
+      "size": 2140,
+      "derived": true,
+      "locators": ["https://cdn.invoke.works/blobs/sha256/31c6b90d"]
+    },
+    {
+      "role": "lyrics",
+      "media_type": "text/plain; charset=utf-8",
+      "digest": "sha256:c71e5033a94b28df6015ac7e3b8290d4f7c61be05a3d92847fe013c6b85a7d29",
+      "size": 3902,
+      "derived": false,
+      "locators": ["https://cdn.invoke.works/blobs/sha256/c71e5033"]
+    },
+    {
+      "role": "score",
+      "media_type": "application/vnd.recordare.musicxml+xml",
+      "digest": "sha256:44b8e2170ca35f96d80b47e3195ca6f207d3b8e94162cf7085ad3e02b7194c6d",
+      "size": 214003,
+      "derived": true,
+      "attested_by": "01J8QK4WRITERMALIMCCALLA00",
+      "locators": ["https://cdn.invoke.works/blobs/sha256/44b8e217"]
+    }
+  ],
+
+  "evidence": [
+    {
+      "role": "reference_recording",
+      "media_type": "audio/wav",
+      "digest": "sha256:0ad3f81b6c249e70a5f3d81094b7c2e69f5a03bd147ce826a0f39b47d5081c62",
+      "size": 48210944,
+      "isrc": "GBAAA2600137",
+      "recorded_at": "2026-02-18",
+      "locators": [
+        "https://cdn.invoke.works/blobs/sha256/0ad3f81b",
+        "s3://mali-mccalla-archive/salt-water/reference.wav",
+        "ipfs://bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi"
+      ]
+    }
+  ],
+
+  "renders": [
+    {
+      "render_id": "rnd-001",
+      "purpose": "pitch",
+      "style_prompt": "gospel choir, live room, 72bpm, Hammond organ, female lead",
+      "engine": "invoke:pipeline/render@0.2.0",
+      "rendered_at": "2026-07-14T09:12:44Z",
+      "mandate_id": "mnd-001",
+      "use_class": "ai_rendering",
+      "isrc": "GBAAA2600214",
+      "media_type": "audio/wav",
+      "digest": "sha256:f3b920c5178ae64d02937c1b5e84af07d6291b3ac05e478f9d16b2043ea7c581",
+      "size": 51882416,
+      "melody_similarity": 0.94,
+      "human_in_loop": false,
+      "copyright_note": "Machine-generated master. Thin or no separate recording copyright; the underlying work is unaffected.",
+      "locators": ["https://cdn.invoke.works/blobs/sha256/f3b920c5"]
+    }
+  ],
+
+  "rights": {
+    "parties": [
+      {
+        "party_id": "01J8QK4WRITERMALIMCCALLA00",
+        "name": "McCalla, Mali",
+        "last_name": "McCalla",
+        "first_name": "Mali",
+        "type": "natural_person",
+        "ipi_name_number": "00123456789",
+        "ipi_base_number": "I-000000229-7",
+        "societies": { "pr": "044", "mr": "044", "sr": "044" }
+      },
+      {
+        "party_id": "01J8QK4WRITERJUNEOKONKWO00",
+        "name": "Okonkwo, June",
+        "last_name": "Okonkwo",
+        "first_name": "June",
+        "type": "natural_person",
+        "ipi_name_number": "00987654321",
+        "ipi_base_number": null,
+        "societies": { "pr": "010", "mr": "010", "sr": "010" }
+      },
+      {
+        "party_id": "01J8QK5PUBINVOKEPUBLISHING",
+        "name": "INVOKE Publishing Ltd",
+        "type": "legal_entity",
+        "ipi_name_number": "00555000111",
+        "ipi_base_number": "I-000554321-9",
+        "societies": { "pr": "044", "mr": "044", "sr": "044" }
+      },
+      {
+        "party_id": "01J8QK5PUBWESTPIERSONGS00",
+        "name": "West Pier Songs Inc",
+        "type": "legal_entity",
+        "ipi_name_number": "00444333222",
+        "ipi_base_number": null,
+        "societies": { "pr": "010", "mr": "010", "sr": "010" }
+      },
+      {
+        "party_id": "01J8QK6SUBEDITIONNORDLICHT",
+        "name": "Edition Nordlicht GmbH",
+        "type": "legal_entity",
+        "ipi_name_number": "00777888999",
+        "ipi_base_number": null,
+        "societies": { "pr": "035", "mr": "035", "sr": "035" }
+      }
+    ],
+
+    "credits": [
+      {
+        "credit_id": "c-001",
+        "party_id": "01J8QK4WRITERMALIMCCALLA00",
+        "role": "CA",
+        "controlled": true,
+        "cwr_record": "SWR",
+        "agreement_id": "agr-001",
+        "ownership_bps": { "pr": 2500, "mr": 2500, "sr": 2500 },
+        "effective_from": "2026-02-01",
+        "effective_to": null,
+        "territory_claims": [
+          {
+            "tis_code": 2136,
+            "tis_name": "World",
+            "indicator": "I",
+            "collection_bps": { "pr": 2500, "mr": 2500, "sr": 2500 }
+          }
+        ]
+      },
+      {
+        "credit_id": "c-002",
+        "party_id": "01J8QK4WRITERJUNEOKONKWO00",
+        "role": "CA",
+        "controlled": false,
+        "cwr_record": "OWR",
+        "agreement_id": null,
+        "ownership_bps": { "pr": 2500, "mr": 2500, "sr": 2500 },
+        "effective_from": "2026-02-01",
+        "effective_to": null,
+        "territory_claims": []
+      },
+      {
+        "credit_id": "c-003",
+        "party_id": "01J8QK5PUBINVOKEPUBLISHING",
+        "role": "E",
+        "controlled": true,
+        "cwr_record": "SPU",
+        "agreement_id": "agr-001",
+        "publisher_sequence": 1,
+        "ownership_bps": { "pr": 2500, "mr": 2500, "sr": 2500 },
+        "effective_from": "2026-02-01",
+        "effective_to": "2031-01-31",
+        "territory_claims": [
+          {
+            "tis_code": 2136,
+            "tis_name": "World",
+            "indicator": "I",
+            "collection_bps": { "pr": 2500, "mr": 2500, "sr": 2500 }
+          },
+          {
+            "tis_code": 276,
+            "tis_name": "Germany",
+            "indicator": "E",
+            "collection_bps": { "pr": 0, "mr": 0, "sr": 0 }
+          }
+        ]
+      },
+      {
+        "credit_id": "c-004",
+        "party_id": "01J8QK6SUBEDITIONNORDLICHT",
+        "role": "SE",
+        "controlled": true,
+        "cwr_record": "SPU",
+        "agreement_id": "agr-002",
+        "publisher_sequence": 2,
+        "ownership_bps": { "pr": 0, "mr": 0, "sr": 0 },
+        "effective_from": "2026-03-15",
+        "effective_to": "2029-03-14",
+        "territory_claims": [
+          {
+            "tis_code": 276,
+            "tis_name": "Germany",
+            "indicator": "I",
+            "collection_bps": { "pr": 2500, "mr": 2500, "sr": 2500 }
+          }
+        ]
+      },
+      {
+        "credit_id": "c-005",
+        "party_id": "01J8QK5PUBWESTPIERSONGS00",
+        "role": "E",
+        "controlled": false,
+        "cwr_record": "OPU",
+        "agreement_id": null,
+        "publisher_sequence": 1,
+        "ownership_bps": { "pr": 2500, "mr": 2500, "sr": 2500 },
+        "effective_from": "2026-02-01",
+        "effective_to": null,
+        "territory_claims": []
+      }
+    ],
+
+    "publisher_for_writer": [
+      { "writer_credit_id": "c-001", "publisher_credit_id": "c-003" },
+      { "writer_credit_id": "c-002", "publisher_credit_id": "c-005" }
+    ],
+
+    "agreements": [
+      {
+        "agreement_id": "agr-001",
+        "agreement_type": "OS",
+        "assignor_party_id": "01J8QK4WRITERMALIMCCALLA00",
+        "assignee_party_id": "01J8QK5PUBINVOKEPUBLISHING",
+        "start_date": "2026-02-01",
+        "end_date": "2031-01-31",
+        "retention_end_date": "2036-01-31",
+        "post_term_collection_end_date": "2037-01-31",
+        "prior_royalty_status": "N",
+        "sales_manufacture_clause": "S",
+        "admin_commission_bps": 1500,
+        "document_digest": "sha256:e5290a7c31f486bd0e94a2f7318c05de6b9147ac2038fe6154c7ba09d3e81f74"
+      },
+      {
+        "agreement_id": "agr-002",
+        "agreement_type": "PS",
+        "assignor_party_id": "01J8QK5PUBINVOKEPUBLISHING",
+        "assignee_party_id": "01J8QK6SUBEDITIONNORDLICHT",
+        "start_date": "2026-03-15",
+        "end_date": "2029-03-14",
+        "retention_end_date": null,
+        "post_term_collection_end_date": "2030-03-14",
+        "prior_royalty_status": "N",
+        "sales_manufacture_clause": "S",
+        "admin_commission_bps": 1000,
+        "document_digest": "sha256:7c04b8ed1932fa65c087e4d21b3097fa5e6d80c419b72fe3a4d05619e8c72b31"
+      }
+    ],
+
+    "totals_bps": {
+      "ownership": { "pr": 10000, "mr": 10000, "sr": 10000 },
+      "valid": true
+    }
+  },
+
+  "derivation": [
+    {
+      "relation_type": "VER",
+      "role": "interpolation",
+      "parent_work_id": null,
+      "parent_iswc": "T-010.402.117-9",
+      "parent_title": "Harbour Lights",
+      "description": "Two-bar melodic interpolation in the pre-chorus.",
+      "cleared": true,
+      "clearance_id": "clr-001"
+    }
+  ],
+
+  "clearances": [
+    {
+      "clearance_id": "clr-001",
+      "type": "interpolation",
+      "status": "cleared",
+      "granted_by": "Harbour Lights Music Ltd",
+      "granted_on": "2026-04-02",
+      "terms": "10% of publishing worldwide, in perpetuity, credit required.",
+      "document_digest": "sha256:1b8f30c74a9e2d05f6183ba47c0e29d5738af61c04b29e7d5a306f18c94b2073"
+    }
+  ],
+
+  "mandates": [
+    {
+      "mandate_id": "mnd-001",
+      "party_id": "01J8QK4WRITERMALIMCCALLA00",
+      "granted_to": "01J8QK5PUBINVOKEPUBLISHING",
+      "rights": ["pr", "mr", "sr"],
+      "territories": [{ "tis_code": 2136, "indicator": "I" }],
+      "use_classes": ["sync_film", "sync_tv", "sync_advertising", "sync_game", "micro_sync", "ai_rendering"],
+      "rate_floor": { "currency": "GBP", "minor_units": 150000 },
+      "exclusions": ["political", "gambling", "tobacco", "ai_training", "artist_voice_cloning"],
+      "effective_from": "2026-02-01",
+      "effective_to": "2031-01-31"
+    },
+    {
+      "mandate_id": "mnd-002",
+      "party_id": "01J8QK4WRITERJUNEOKONKWO00",
+      "granted_to": null,
+      "rights": [],
+      "territories": [],
+      "use_classes": [],
+      "note": "No mandate on file. Non-controlled writer; sync requires direct clearance."
+    }
+  ],
+
+  "clearability": {
+    "computed_at": "2026-06-30T14:22:08Z",
+    "one_stop": false,
+    "coverage_bps": { "pr": 5000, "mr": 5000, "sr": 5000 },
+    "gaps": [
+      {
+        "party_id": "01J8QK4WRITERJUNEOKONKWO00",
+        "bps": 2500,
+        "reason": "no_mandate"
+      },
+      {
+        "party_id": "01J8QK5PUBWESTPIERSONGS00",
+        "bps": 2500,
+        "reason": "not_controlled"
+      }
+    ]
+  },
+
+  "registrations": [
+    {
+      "society_code": "044",
+      "society_name": "PRS for Music",
+      "transaction_type": "NWR",
+      "submitted_at": "2026-05-04T09:00:00Z",
+      "file": "CW260001INV_044.V21",
+      "ack_status": "AS",
+      "ack_received_at": "2026-05-11T02:14:00Z",
+      "society_work_code": "PRS-88213904",
+      "allocated_iswc": "T-034.524.680-1",
+      "messages": []
+    },
+    {
+      "society_code": "MLC",
+      "society_name": "The Mechanical Licensing Collective",
+      "transaction_type": "NWR",
+      "submitted_at": "2026-05-04T09:00:00Z",
+      "file": "CW260001INV_MLC.V21",
+      "ack_status": "CO",
+      "ack_received_at": "2026-05-19T11:47:00Z",
+      "society_work_code": "MLC-K7X2R1",
+      "allocated_iswc": null,
+      "messages": [
+        {
+          "level": "T",
+          "code": "MR0201",
+          "text": "Conflicting claim on mechanical share. Overclaim of 2500 bps against existing registration."
+        }
+      ]
+    }
+  ],
+
+  "provenance_log": "sha256:5e1153f97c2a8b04d6371ea9f80b25c4d738016fa9e42b70c518d3a6f4092e8b",
+  "provenance_recent": [
+    {
+      "at": "2026-02-19T16:04:11Z",
+      "actor": "invoke:pipeline/basic-pitch@0.4.0",
+      "action": "derived",
+      "target": "content.melody",
+      "from": "evidence.reference_recording",
+      "confidence": 0.87
+    },
+    {
+      "at": "2026-02-19T16:04:39Z",
+      "actor": "invoke:pipeline/whisper-large-v3",
+      "action": "derived",
+      "target": "content.lyrics",
+      "from": "evidence.reference_recording",
+      "confidence": 0.72
+    },
+    {
+      "at": "2026-02-20T10:31:02Z",
+      "actor": "01J8QK4WRITERMALIMCCALLA00",
+      "action": "corrected",
+      "target": "content.lyrics",
+      "note": "Machine transcription of verse 2 was wrong throughout."
+    },
+    {
+      "at": "2026-06-30T14:19:55Z",
+      "actor": "01J8QK4WRITERMALIMCCALLA00",
+      "action": "attested",
+      "target": "rights",
+      "note": "Splits confirmed with June Okonkwo by email, 2026-06-29."
+    }
+  ],
+
+  "timestamps": [
+    {
+      "type": "rfc3161",
+      "authority": "https://freetsa.org/tsr",
+      "digest": "sha256:ccf1a0d7b3e58924671fb0a4c2d9e3785b16fa0c4d29e7b3518a06d4f7c2913e",
+      "stamped_at": "2026-06-30T14:22:41Z",
+      "token": "MIIFxDCCA6ygAwIBAgIJAOr...truncated...="
+    }
+  ],
+
+  "signatures": [
+    {
+      "party_id": "01J8QK4WRITERMALIMCCALLA00",
+      "algorithm": "ed25519",
+      "key_id": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "canonicalisation": "RFC8785",
+      "signed_at": "2026-06-30T14:22:12Z",
+      "value": "z3yfs2Nq8Vh1KpbA6RmT4wXcE9dLuY7ZgQvJ5nH0oW2sC8xB1kM6rD4tF7jP3aN9eU"
+    },
+    {
+      "party_id": "01J8QK5PUBINVOKEPUBLISHING",
+      "algorithm": "ed25519",
+      "key_id": "did:key:z6MkjT9pQwR2sL4xN7vB1cD8fH5gK3mY6uA0eZ9tX2nJ4rVq",
+      "canonicalisation": "RFC8785",
+      "signed_at": "2026-06-30T14:22:19Z",
+      "value": "z5Bq7XmR3tK9wN1pL4vD8cF2hJ6gY0uA5eZ7sT3nQ9rM2xW6kB1jP4aU8dV5oC7fE"
+    }
+  ]
+}
