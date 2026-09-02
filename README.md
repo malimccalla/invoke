@@ -113,18 +113,132 @@ Sound recordings appear only as *evidence of* a work, never as the primary entit
 
 ## Domain model
 
-Modelled against CWR (v2.1 rev 8 / v2.2) so data can be delivered to societies without a translation layer bolted on at the end.
+Modelled against CWR (v2.1 rev 8 / v2.2) so data can be delivered to societies without a translation layer bolted on at the end. Bracketed codes are the CWR record types each entity serialises to.
 
-```
-InterestedParty ──< WorkCredit >── MusicalWork ──< WorkRelation >── MusicalWork
-       │                │  │                            (VER / COM)
-       │                │  └──< TerritoryClaim          (SPT / OPT / SWT / OWT)
-       │                └─────< PublisherForWriter      (PWR)
-       ├──< Agreement                                   (AGR)
-       └──< Mandate                                     (licensing authority)
+```mermaid
+erDiagram
+    MUSICAL_WORK ||--o{ WORK_CREDIT : "has"
+    INTERESTED_PARTY ||--o{ WORK_CREDIT : "holds"
+    WORK_CREDIT ||--o{ TERRITORY_CLAIM : "SPT / OPT / SWT / OWT"
+    WORK_CREDIT ||--o{ PUBLISHER_FOR_WRITER : "writer side (PWR)"
+    WORK_CREDIT ||--o{ PUBLISHER_FOR_WRITER : "publisher side (PWR)"
+    AGREEMENT ||--o{ WORK_CREDIT : "governs (AGR)"
+    INTERESTED_PARTY ||--o{ AGREEMENT : "is party to"
+    INTERESTED_PARTY ||--o{ MANDATE : "grants"
+    MUSICAL_WORK ||--o{ WORK_RELATION : "is derived from (VER / COM)"
+    MUSICAL_WORK ||--o{ WORK_RELATION : "is the source of"
+    MUSICAL_WORK ||--o{ WORK_REGISTRATION : "is registered by"
+    SOCIETY ||--o{ WORK_REGISTRATION : "acknowledges (ACK)"
+    MUSICAL_WORK ||--o{ SOUND_RECORDING : "is evidenced by (REC)"
+    MUSICAL_WORK ||--o{ LICENCE : "is licensed under"
+    MANDATE ||--o{ LICENCE : "authorises"
 
-MusicalWork ──< WorkRegistration >── Society            (NWR/REV → ACK)
-MusicalWork ──< SoundRecording                          (REC — evidence)
+    MUSICAL_WORK {
+        uuid id PK
+        string iswc UK "ISO 15707, T-prefix"
+        string title
+        string version_type "ORI | MOD"
+        string distribution_category "POP | JAZ | SER | UNC"
+        int duration_ms
+        bool grand_rights_ind
+    }
+
+    INTERESTED_PARTY {
+        uuid id PK
+        string ipi_name_number UK "11 digits"
+        string ipi_base_number "I-000000229-7"
+        string name
+        string canonical_party_id FK "merge target for dupes"
+    }
+
+    WORK_CREDIT {
+        uuid id PK
+        uuid musical_work_id FK
+        uuid interested_party_id FK
+        uuid agreement_id FK
+        string role "writer OR publisher vocabulary"
+        bool controlled "SWR/SPU vs OWR/OPU"
+        int pr_ownership_bps "10000 = 100.00%"
+        int mr_ownership_bps
+        int sr_ownership_bps
+        date effective_from
+        date effective_to
+    }
+
+    TERRITORY_CLAIM {
+        uuid id PK
+        uuid work_credit_id FK
+        int tis_code "CISAC territory, hierarchical"
+        string indicator "I = include | E = exclude"
+        int pr_collection_bps
+        int mr_collection_bps
+        int sr_collection_bps
+    }
+
+    PUBLISHER_FOR_WRITER {
+        uuid id PK
+        uuid writer_credit_id FK
+        uuid publisher_credit_id FK
+        int publisher_sequence "chain of title order"
+    }
+
+    AGREEMENT {
+        uuid id PK
+        string agreement_type "OG | OS | PG | PS"
+        date start_date
+        date end_date
+        date retention_end_date
+        date post_term_collection_end
+        int admin_commission_bps
+    }
+
+    MANDATE {
+        uuid id PK
+        uuid interested_party_id FK
+        string rights "PR | MR | SR"
+        string use_classes "sync | ad | game | ai_training"
+        int tis_code
+        int rate_floor_minor_units
+        string exclusions
+    }
+
+    WORK_RELATION {
+        uuid id PK
+        uuid parent_work_id FK
+        uuid child_work_id FK
+        string relation_type "VER | COM"
+    }
+
+    WORK_REGISTRATION {
+        uuid id PK
+        uuid musical_work_id FK
+        uuid society_id FK
+        string transaction_type "NWR | REV"
+        string ack_status "RA | AS | AC | CO | DU | RJ | NP"
+        string society_work_code
+        string allocated_iswc
+    }
+
+    SOCIETY {
+        string code PK "3-digit CISAC code"
+        string name "PRS | ASCAP | BMI"
+    }
+
+    SOUND_RECORDING {
+        uuid id PK
+        uuid musical_work_id FK
+        string isrc
+        int duration_ms
+    }
+
+    LICENCE {
+        uuid id PK
+        uuid musical_work_id FK
+        string use_class
+        int tis_code
+        string split_snapshot_hash "state it was granted against"
+        bool one_stop
+    }
 ```
 
 ### `MusicalWork`
