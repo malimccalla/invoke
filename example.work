@@ -10,10 +10,11 @@
 
   "identity": {
     "iswc": "T-034.524.680-1",
+    "submitter_work_number": "INV00000000123",
     "title": "Salt Water",
     "alternative_titles": [
-      { "title": "Saltwater", "type": "alternate_spelling" },
-      { "title": "Agua Salada", "type": "translation", "language": "spa" }
+      { "title": "Saltwater", "type": "alternate_spelling", "cwr_title_type": "AT" },
+      { "title": "Agua Salada", "type": "translation", "language": "spa", "cwr_title_type": "TT" }
     ],
     "language": "eng",
     "duration_ms": 213480,
@@ -27,6 +28,14 @@
     "recorded_indicator": true,
     "grand_rights_ind": false,
     "created_year": 2026
+  },
+
+  "musical_attributes": {
+    "key": "F# minor",
+    "tempo_bpm": 84,
+    "metre": "4/4",
+    "derived": true,
+    "confidence": 0.91
   },
 
   "content": [
@@ -62,6 +71,14 @@
       "derived": true,
       "attested_by": "01J8QK4WRITERMALIMCCALLA00",
       "locators": ["https://cdn.invoke.works/blobs/sha256/44b8e217"]
+    },
+    {
+      "role": "structure",
+      "media_type": "application/json",
+      "digest": "sha256:a08d4b6127ce395f70b2148ad6c93f025e71b8043fa9c26d5107e3b84c9d0f61",
+      "size": 1187,
+      "derived": true,
+      "locators": ["https://cdn.invoke.works/blobs/sha256/a08d4b61"]
     }
   ],
 
@@ -97,6 +114,9 @@
       "melody_similarity": 0.94,
       "human_in_loop": false,
       "copyright_note": "Machine-generated master. Thin or no separate recording copyright; the underlying work is unaffected.",
+      "consent_coverage_bps": 2500,
+      "consent_note": "Only mnd-001 (2500 bps) authorises ai_rendering. Under CDPA 1988 a joint work requires the consent of all owners, so this render is restricted to internal pitching and may not be published or exploited until the remaining 7500 bps consent.",
+      "distribution_restriction": "internal_pitch_only",
       "locators": ["https://cdn.invoke.works/blobs/sha256/f3b920c5"]
     }
   ],
@@ -105,46 +125,59 @@
     "parties": [
       {
         "party_id": "01J8QK4WRITERMALIMCCALLA00",
-        "name": "McCalla, Mali",
+        "canonical_party_id": null,
         "last_name": "McCalla",
         "first_name": "Mali",
         "type": "natural_person",
         "ipi_name_number": "00123456789",
         "ipi_base_number": "I-000000229-7",
-        "societies": { "pr": "044", "mr": "044", "sr": "044" }
+        "isni": "0000000121174558",
+        "ddex_party_id": "PADPIDA2026041201X",
+        "societies": { "pr": "044", "mr": "052", "sr": null }
       },
       {
         "party_id": "01J8QK4WRITERJUNEOKONKWO00",
-        "name": "Okonkwo, June",
+        "canonical_party_id": null,
         "last_name": "Okonkwo",
         "first_name": "June",
         "type": "natural_person",
         "ipi_name_number": "00987654321",
         "ipi_base_number": null,
-        "societies": { "pr": "010", "mr": "010", "sr": "010" }
+        "isni": null,
+        "ddex_party_id": null,
+        "societies": { "pr": "010", "mr": null, "sr": null }
       },
       {
         "party_id": "01J8QK5PUBINVOKEPUBLISHING",
+        "canonical_party_id": null,
         "name": "INVOKE Publishing Ltd",
         "type": "legal_entity",
         "ipi_name_number": "00555000111",
         "ipi_base_number": "I-000554321-9",
-        "societies": { "pr": "044", "mr": "044", "sr": "044" }
+        "isni": null,
+        "ddex_party_id": "PADPIDA2026020901Y",
+        "societies": { "pr": "044", "mr": "052", "sr": null }
       },
       {
         "party_id": "01J8QK5PUBWESTPIERSONGS00",
+        "canonical_party_id": null,
         "name": "West Pier Songs Inc",
         "type": "legal_entity",
         "ipi_name_number": "00444333222",
         "ipi_base_number": null,
-        "societies": { "pr": "010", "mr": "010", "sr": "010" }
+        "isni": null,
+        "ddex_party_id": null,
+        "societies": { "pr": "010", "mr": null, "sr": null }
       },
       {
         "party_id": "01J8QK6SUBEDITIONNORDLICHT",
+        "canonical_party_id": null,
         "name": "Edition Nordlicht GmbH",
         "type": "legal_entity",
         "ipi_name_number": "00777888999",
         "ipi_base_number": null,
+        "isni": null,
+        "ddex_party_id": null,
         "societies": { "pr": "035", "mr": "035", "sr": "035" }
       }
     ],
@@ -153,7 +186,7 @@
       {
         "credit_id": "c-001",
         "party_id": "01J8QK4WRITERMALIMCCALLA00",
-        "role": "CA",
+        "writer_designation": "CA",
         "controlled": true,
         "cwr_record": "SWR",
         "agreement_id": "agr-001",
@@ -172,7 +205,7 @@
       {
         "credit_id": "c-002",
         "party_id": "01J8QK4WRITERJUNEOKONKWO00",
-        "role": "CA",
+        "writer_designation": "CA",
         "controlled": false,
         "cwr_record": "OWR",
         "agreement_id": null,
@@ -184,7 +217,7 @@
       {
         "credit_id": "c-003",
         "party_id": "01J8QK5PUBINVOKEPUBLISHING",
-        "role": "E",
+        "publisher_type": "E",
         "controlled": true,
         "cwr_record": "SPU",
         "agreement_id": "agr-001",
@@ -210,7 +243,7 @@
       {
         "credit_id": "c-004",
         "party_id": "01J8QK6SUBEDITIONNORDLICHT",
-        "role": "SE",
+        "publisher_type": "SE",
         "controlled": true,
         "cwr_record": "SPU",
         "agreement_id": "agr-002",
@@ -230,7 +263,7 @@
       {
         "credit_id": "c-005",
         "party_id": "01J8QK5PUBWESTPIERSONGS00",
-        "role": "E",
+        "publisher_type": "E",
         "controlled": false,
         "cwr_record": "OPU",
         "agreement_id": null,
@@ -289,7 +322,7 @@
       "relation_type": "VER",
       "role": "interpolation",
       "parent_work_id": null,
-      "parent_iswc": "T-010.402.117-9",
+      "parent_iswc": "T-010.402.117-1",
       "parent_title": "Harbour Lights",
       "description": "Two-bar melodic interpolation in the pre-chorus.",
       "cleared": true,
@@ -305,6 +338,15 @@
       "granted_by": "Harbour Lights Music Ltd",
       "granted_on": "2026-04-02",
       "terms": "10% of publishing worldwide, in perpetuity, credit required.",
+      "consideration": {
+        "type": "royalty_participation",
+        "basis": "publisher_receipts",
+        "bps": 1000,
+        "territory": { "tis_code": 2136, "tis_name": "World", "indicator": "I" },
+        "term": "perpetuity"
+      },
+      "affects_ownership": false,
+      "note": "A participation in receipts, not an assignment of copyright. The rights graph is unchanged and ownership still totals 10000 bps. Not expressible in CWR; it survives only in this document and in the DDEX MWL grant.",
       "document_digest": "sha256:1b8f30c74a9e2d05f6183ba47c0e29d5738af61c04b29e7d5a306f18c94b2073"
     }
   ],
@@ -354,6 +396,7 @@
   "registrations": [
     {
       "society_code": "044",
+      "recipient_code": "044",
       "society_name": "PRS for Music",
       "transaction_type": "NWR",
       "submitted_at": "2026-05-04T09:00:00Z",
@@ -365,7 +408,8 @@
       "messages": []
     },
     {
-      "society_code": "MLC",
+      "society_code": null,
+      "recipient_code": "MLC",
       "society_name": "The Mechanical Licensing Collective",
       "transaction_type": "NWR",
       "submitted_at": "2026-05-04T09:00:00Z",
@@ -376,15 +420,22 @@
       "allocated_iswc": null,
       "messages": [
         {
+          "type": "E",
           "level": "T",
           "code": "MR0201",
+          "record_type": "SPU",
+          "original_record_sequence": 4,
           "text": "Conflicting claim on mechanical share. Overclaim of 2500 bps against existing registration."
         }
       ]
     }
   ],
 
-  "provenance_log": "sha256:5e1153f97c2a8b04d6371ea9f80b25c4d738016fa9e42b70c518d3a6f4092e8b",
+  "provenance_log": {
+    "digest": "sha256:5e1153f97c2a8b04d6371ea9f80b25c4d738016fa9e42b70c518d3a6f4092e8b",
+    "media_type": "application/jsonl",
+    "locators": ["https://cdn.invoke.works/blobs/sha256/5e1153f9"]
+  },
   "provenance_recent": [
     {
       "at": "2026-02-19T16:04:11Z",
@@ -422,6 +473,8 @@
     {
       "type": "rfc3161",
       "authority": "https://freetsa.org/tsr",
+      "qualified": false,
+      "qualification_note": "Not an eIDAS qualified trust service provider. Carries no Article 41 presumption; a qualified TSA from an EU Trusted List is required for that.",
       "digest": "sha256:ccf1a0d7b3e58924671fb0a4c2d9e3785b16fa0c4d29e7b3518a06d4f7c2913e",
       "stamped_at": "2026-06-30T14:22:41Z",
       "token": "MIIFxDCCA6ygAwIBAgIJAOr...truncated...="

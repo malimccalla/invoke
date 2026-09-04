@@ -51,13 +51,13 @@ CWR is the **EDIFACT of music publishing**, not the PDF. It is a wire format for
 
 And ISWC (ISO 15707) is only an identifier: `T-`, nine sequential digits, a mod-10 check digit. It encodes nothing — not the writers, not the shares, not the music. It is a pointer with no referent you can fetch. Duplicate ISWCs for the same work exist and, by CISAC's own admission, cannot be retired — only linked.
 
-### Has anyone built the artefact before?
+### Prior art
 
 Partially, in three traditions that have never been joined up.
 
 **Notation and content encodings** — MusicXML, MEI, MNX, LilyPond, ABC, Standard MIDI Files. These genuinely encode the *musical* content of a composition; MIDI is the closest thing to a machine-readable composition that exists at scale. None carry a byte of rights data.
 
-**Rights and registration formats** — CWR, DDEX (MWL/MWN for work licensing and notification, RDR-N for royalty reporting), MLC bulk registration, ICE, CIS-Net. These carry rights data and no music.
+**Rights and registration formats** — CWR, DDEX's works stack (**MWDR**: `MWL` for licensing, `MWN` for right-share notification, `LoD` for letters of direction; plus **BWARM** for bulk works-and-recordings metadata and **CDM** for claim detail and overclaim discrepancies), MLC bulk registration, ICE, CIS-Net. These carry rights data and no music.
 
 **Legal deposit** — the oldest answer and the most instructive. US copyright registration historically required a deposit copy, usually a lead sheet. The courts have already had to rule on what the actual artefact of a musical work is, and in *Skidmore v. Led Zeppelin* (9th Cir. 2020, en banc) the answer was: for works registered under the 1909 Act, the scope of the copyright is the deposit copy, not the famous recording. The legal system's manifestation of a musical work is a piece of paper in an archive.
 
@@ -65,7 +65,7 @@ Partially, in three traditions that have never been joined up.
 
 The pattern is unambiguous and worth stating plainly: **every attempt at a single global authoritative works database has failed, and they failed for governance reasons, not technical ones.** No rightsholder will cede the canonical copy. Any design that needs universal buy-in to be useful is dead before it starts.
 
-### So what is INVOKE actually building?
+### The INVOKE work package
 
 Not a global database. A **work package**: a signed, content-addressed, versioned artefact that one party can produce, hold and hand to another, and which is useful on its own from day one.
 
@@ -73,7 +73,7 @@ It carries four things — the **identity** of the work, the **musical content**
 
 The useful analogues are outside music. An **SBOM** (SPDX/CycloneDX) is a machine-readable bill of materials for an intangible composite. An **OCI image manifest** gives content-addressed identity to something assembled from layers. **C2PA content credentials** attach signed provenance to media. A **git commit** gives verifiable, replayable history of who changed what.
 
-The honest caveat, stated in the design rather than papered over: **you cannot fully represent a musical work, because its legal boundary is deliberately undefined.** Substantial similarity is decided by a jury, not a schema. So the artefact is not the work. It is a *verifiable, versioned, attributable claim about* the work, with the musical content attached so the claim is anchored to something rather than floating free. That is exactly what a deposit copy does, and exactly what CWR does not.
+The design has a deliberate limit: **a musical work cannot be fully represented, because its legal boundary is deliberately undefined.** Substantial similarity is decided by a jury, not a schema. The artefact is not the work. It is a *verifiable, versioned, attributable claim about* the work, with the musical content attached so the claim is anchored to something rather than floating free. That is exactly what a deposit copy does, and exactly what CWR does not.
 
 ---
 
@@ -81,9 +81,9 @@ The honest caveat, stated in the design rather than papered over: **you cannot f
 
 See [example.work](example.work) for a complete, valid one.
 
-### You are not inventing a file format
+### A file format needs no central authority
 
-That phrase sounds like it needs an authority. It doesn't. A format is three things: an agreed byte layout, a filename convention, and software that reads it.
+A format is three things: an agreed byte layout, a filename convention, and software that reads it.
 
 | Thing | What it actually is |
 | --- | --- |
@@ -127,7 +127,7 @@ The digest is the truth; the location is a hint. INVOKE can host it, the writer 
 
 ### `.work` and `.workpkg` are not the same thing
 
-Worth being precise here, because it's easy to get the analogy backwards:
+The distinction matters because it is easy to get the analogy backwards:
 
 | | Contains | Size | Analogue |
 | --- | --- | --- | --- |
@@ -150,10 +150,11 @@ And because it diffs. A `.work` file in a git repository turns a change of split
 - **A real `publisher_for_writer` chain**, so each writer's share has somewhere to flow.
 - **A German sub-publisher with zero ownership and full collection** in that territory — expressed as `World / include` minus `Germany / exclude` on the original publisher, and `Germany / include` on the sub-publisher. This is the include/exclude TIS machinery doing the job an ISO country array cannot.
 - **Every credit is time-bounded**, and agreements carry `retention_end_date` and `post_term_collection_end_date` separately from `end_date`.
-- **A cleared interpolation** of another work, with the clearance document referenced by digest rather than described in prose.
+- **A cleared interpolation** of another work, with the clearance document referenced by digest and its consideration modelled as a `royalty_participation` carrying `affects_ownership: false` — so the obligation is visible without corrupting the split.
+- **Structured names and a merge target.** Natural persons carry `last_name` / `first_name` and no concatenated display string; every party carries a nullable `canonical_party_id`, plus ISNI and DDEX Party ID alongside the IPI numbers.
 - **A split registration outcome** — PRS accepted (`AS`), the MLC returned a conflict (`CO`) with an overclaim message. Both are data, neither is an error.
 - **`clearability` computed to 5000 bps and `one_stop: false`**, naming the two specific parties blocking an instant sync grant.
-- **A gospel render** in `renders[]` with its own ISRC, citing the `mandate_id` that permitted it, a `melody_similarity` of `0.94` against the source melody, and an explicit note that the master's own copyright is thin.
+- **A gospel render** in `renders[]` with its own ISRC, citing the `mandate_id` that permitted it, a `melody_similarity` of `0.94` against the source melody, an explicit note that the master's own copyright is thin, and `consent_coverage_bps: 2500` marking it internal-pitch-only — only one of the two writers has granted an `ai_rendering` mandate, and a UK joint work needs all of them.
 - **A provenance trail showing a Whisper transcription at confidence `0.72` being corrected by a human**, then the rights being attested. Derived, then contested, then signed.
 
 ---
@@ -165,37 +166,41 @@ A `.work` file is not a delivery format. It is the source that delivery formats 
 | Projection | Recipient | Purpose |
 | --- | --- | --- |
 | **CWR** `NWR` / `REV` | PROs, mechanical societies | registration |
+| **DDEX MWN** | societies, DSPs, licensees | musical work right share notification |
+| **DDEX MWL** | licensees | licence request and grant |
+| **DDEX LoD** | payors | letter of direction — where the money is actually sent |
+| **DDEX BWARM** | bulk recipients | whole-catalogue works, recordings and right shares |
+| **DDEX CDM** | DSPs | claim detail, and Part 5 responses to overclaim discrepancies |
 | **Lead sheet** | US Copyright Office | statutory deposit copy |
-| **DDEX MWL / MWN** | licensees, DSPs | work licensing and notification |
 | **Licence instrument** | a counterparty | a grant, with the split state it was made against |
 | **Royalty statement** | payees | settlement against a versioned split |
 | **Rendering** | anyone | a new recording of the work (below) |
 
 ### CWR
 
-The registration case is the one that has to work, so it's worth showing concretely. [example.work](example.work) projects to roughly this. Field order is illustrative — the real thing is fixed-width with exact column offsets from the CISAC spec.
+The registration case is the one that has to work, so this is a concrete projection. [example.work](example.work) projects to roughly this. Field order is illustrative — the real thing is fixed-width with exact column offsets from the CISAC spec.
 
 ```
-HDR  PB  00555000111  INVOKE PUBLISHING LTD           01.10  20260504 090000
+HDR  00  555000111  INVOKE PUBLISHING LTD            01.10  20260504 090000  20260504
 GRH  NWR  00001  02.10
-  NWR  work#=01J8QK3M…  SALT WATER  T0345246801  EN  000333
+  NWR  work#=INV00000000123  SALT WATER  T0345246801  EN  000333
        MOD  POP  recorded=Y  MTX  arr=ORI  lyr=ORI  grand_rights=N
     SPU  seq=01  00555000111  INVOKE PUBLISHING LTD   type=E
-         pr 044/02500   mr 044/02500   sr 044/02500
-      SPT  tis=2136  I  02500 02500 02500
-      SPT  tis=0276  E  00000 00000 00000
+         pr 044/02500   mr 052/02500   sr 000/02500
+      SPT  ip#=00555000111  tis=2136  I  02500 02500 02500
+      SPT  ip#=00555000111  tis=0276  E  00000 00000 00000
     SPU  seq=02  00777888999  EDITION NORDLICHT GMBH  type=SE
          pr 035/00000   mr 035/00000   sr 035/00000
-      SPT  tis=0276  I  02500 02500 02500
+      SPT  ip#=00777888999  tis=0276  I  02500 02500 02500
     SWR  00123456789  MCCALLA / MALI  designation=CA
-         pr 044/02500   mr 044/02500   sr 044/02500
-      SWT  tis=2136  I  02500 02500 02500
-      PWR  00555000111  INVOKE PUBLISHING LTD  agreement=agr-001
+         pr 044/02500   mr 052/02500   sr 000/02500
+      SWT  ip#=00123456789  tis=2136  I  02500 02500 02500
+      PWR  00555000111  INVOKE PUBLISHING LTD  agreement=agr-001  writer=00123456789
     OPU  seq=01  00444333222  WEST PIER SONGS INC  type=E   pr 010/02500 …
     OWR  00987654321  OKONKWO / JUNE  designation=CA        pr 010/02500 …
     ALT  SALTWATER      type=AT
-    ALT  AGUA SALADA    type=TE  ES
-    VER  HARBOUR LIGHTS  T0104021179
+    ALT  AGUA SALADA    type=TT  ES
+    VER  HARBOUR LIGHTS  T0104021171
     REC  GBAAA2600137  000333
 GRT  00001  transactions=1  records=…
 TRL  groups=1  transactions=1  records=…
@@ -205,7 +210,14 @@ TRL  groups=1  transactions=1  records=…
 
 Note the German sub-publishing deal surviving the projection intact: `World / include`, then `Germany / exclude` on the original publisher, then `Germany / include` on the sub-publisher. Three `SPT` records expressing something an ISO country array structurally cannot.
 
-The remaining gaps are small. `HDR` needs sender credentials, which are account configuration rather than work data. Each society needs its own file with its own recipient code. Language maps ISO 639-2 → 639-1 (`eng` → `EN`), and duration truncates from milliseconds to `HHMMSS`.
+The remaining gaps are all field-width and vocabulary detail, and every one of them is the kind that fails at the society rather than at the schema:
+
+- **`HDR` Sender ID is nine characters and an IPI Name Number is eleven.** CWR's rule is that a sender whose IPI exceeds nine digits puts the leading two digits in the **Sender Type** field and the remaining nine in **Sender ID** — so `00555000111` serialises as type `00`, id `555000111`, not as `PB` plus the whole number.
+- **Submitter Work # is fourteen characters and a ULID is twenty-six.** `work_id` cannot be the submitter work number. `identity.submitter_work_number` carries a short, stable, submitter-scoped key alongside it, and the mapping between the two is the thing `ACK` reconciliation joins on.
+- **Title Type `TE` is First Line of Text, not translation.** A translated title is `TT`.
+- **`SPT` / `SWT` carry the Interested Party # and a sequence number**, and collection shares precede the inclusion/exclusion indicator and the TIS code in the record layout.
+- `HDR` also needs sender credentials and a transmission date, which are account configuration rather than work data, and each society needs its own file with its own recipient code.
+- Language maps ISO 639-2 → 639-1 (`eng` → `EN`), and duration truncates from milliseconds to `HHMMSS`.
 
 ### The projection is lossy in one direction only
 
@@ -221,6 +233,19 @@ Everything CWR needs is in the `.work` file. Much of the `.work` file has nowher
 | the version chain and per-component priority | none |
 
 CWR can express *who owns what*. It cannot express *what the song is*, *who may license it*, *what it was derived from*, or *who asserted any of it and when*. So `.work` → CWR is a projection; CWR → `.work` recovers perhaps a third of the document.
+
+### The interpolation trap
+
+Worth being concrete about one case, because it is the sharpest instance and the example file is built around it.
+
+"Salt Water" is an original work containing a two-bar cleared interpolation of "Harbour Lights". CWR makes you choose between two wrong answers:
+
+- **`version_type: ORI`** — the honest description, but then `music_arrangement`, `lyric_adaptation` and the `VER` record are all disallowed and the derivation disappears entirely.
+- **`version_type: MOD`** with a `VER` record pointing at `T-010.402.117-1` — which keeps the link, but tells every society that Salt Water *is a version of* Harbour Lights. That is an open invitation for Harbour Lights' publisher to claim the whole work.
+
+There is no third option, and the clearance itself has nowhere to go at all. Ten per cent of publisher receipts, worldwide, in perpetuity, is an obligation that does not touch ownership — the split still totals `10000` bps — and CWR only models ownership. So it lives in `clearances[].consideration` with `affects_ownership: false`, projects into the DDEX `MWL` grant, and projects into CWR not at all.
+
+A format that cannot distinguish *derived from* from *is a version of*, and cannot record what the derivation cost, is not a description of a work. It is a registration message.
 
 That asymmetry is the entire argument for the format existing.
 
@@ -242,6 +267,8 @@ work 01J8QK…                          ← stable identity, never changes
 The work is mutable. Its *states* are immutable and ordered. `v3` is current; `v1` still proves what existed in March.
 
 **Per-component digests give per-element priority.** Because each piece of content is addressed separately, an unchanged component keeps a byte-identical digest across versions. If the lyrics changed between v1 and v3 but `melody` hashes the same throughout, that is cryptographic proof the melody dates to March — even though the song was edited twice since. Disputes are usually about the hook, so that is exactly the evidence worth having. **A single hash over the whole package would destroy this property.**
+
+Components are addressed by `role`, which is unique within `content[]`. `content.melody` is therefore a stable reference that survives reordering; an array index would not be, which matters because provenance entries point at components by name.
 
 It also resolves [model correction 6](#model-corrections) for nothing: "the split as at the usage date" is just whichever version was current on that date.
 
@@ -271,6 +298,8 @@ Layered cheapest first:
 | Sigstore / Rekor transparency log | free | publicly auditable inclusion proof |
 | OpenTimestamps → Bitcoin anchor | free | public anchor, no wallet or token, no legal presumption |
 | US Copyright Office registration | ~$45 | the only one that unlocks statutory damages |
+
+**"Qualified" is a term of art.** It means the timestamping authority appears on an EU member state's Trusted List. A free RFC 3161 service runs the identical protocol and is cryptographically just as sound, but carries no Article 41 presumption — which is why [example.work](example.work) records `qualified: false` against its timestamp instead of quietly implying otherwise.
 
 ### Automate deposit, don't replace it
 
@@ -424,6 +453,7 @@ erDiagram
     MUSICAL_WORK {
         uuid id PK
         string iswc UK "ISO 15707, T-prefix"
+        string submitter_work_number "CWR: 14 chars max"
         string title
         string version_type "ORI | MOD"
         string distribution_category "POP | JAZ | SER | UNC"
@@ -435,7 +465,11 @@ erDiagram
         uuid id PK
         string ipi_name_number UK "11 digits"
         string ipi_base_number "I-000000229-7"
+        string isni "ISO 27729"
+        string ddex_party_id "DPID"
         string name
+        string last_name "natural persons only"
+        string first_name "natural persons only"
         string canonical_party_id FK "merge target for dupes"
     }
 
@@ -444,8 +478,10 @@ erDiagram
         uuid musical_work_id FK
         uuid interested_party_id FK
         uuid agreement_id FK
-        string role "writer OR publisher vocabulary"
+        string writer_designation "C | A | CA | AR | AD | SA | SR | TR | PA"
+        string publisher_type "E | AQ | AM | SE | ES | PA"
         bool controlled "SWR/SPU vs OWR/OPU"
+        int publisher_sequence "chain of title order"
         int pr_ownership_bps "10000 = 100.00%"
         int mr_ownership_bps
         int sr_ownership_bps
@@ -467,7 +503,6 @@ erDiagram
         uuid id PK
         uuid writer_credit_id FK
         uuid publisher_credit_id FK
-        int publisher_sequence "chain of title order"
     }
 
     AGREEMENT {
@@ -649,7 +684,7 @@ That `one_stop` boolean is the product. Production music libraries have dominate
 - **The licence is itself an artefact.** Signed, addressable, versioned, carrying the exact split state it was granted against. When a dispute arrives three years later, the licence carries its own evidence.
 - **Most-favoured-nations clauses get modelled, not handled by email.** If one writer's rate is raised in a sync, MFN co-writers match automatically. It is a rule on the deal, and the most common source of after-the-fact adjustments.
 - **AI training is a use class, not an edge case.** Enumerable and separately excludable per party, per territory, from the start.
-- **Adopt DDEX MWL/MWN rather than inventing messages.** Musical Work Licensing and Notification already exist and are better than anything worth designing from scratch.
+- **Adopt the DDEX works stack rather than inventing messages.** `MWL` (Musical Work Licensing) and `MWN` (Musical Work Right Share Notification) are two of the three MWDR choreographies — the third, `LoD`, covers letters of direction, which is exactly the "who actually gets paid" instrument the agreement chain implies. `BWARM` covers the bulk case CWR is usually reached for, and `CDM` Part 5 is the standard way to answer an overclaim. All of it is better than anything worth designing from scratch.
 - **Settlement runs against the split as at usage date.** See correction 6. Every payout references an immutable snapshot.
 
 ---
@@ -682,7 +717,7 @@ GET    /payouts/{id}
 
 **Licensing engine** — mandate evaluation, clearability, quoting, licence issuance.
 
-**Settlement** — usage ingestion, matching, split application per right and territory, commission netting, auditable ledger, payouts.
+**Settlement** — usage ingestion (DDEX **DSR**), matching, split application per right and territory, claim detail and overclaim responses (DDEX **CDM** Parts 3 and 5), commission netting, auditable ledger, payouts.
 
 ---
 
@@ -691,7 +726,7 @@ GET    /payouts/{id}
 Learned from the graveyard above, and non-negotiable:
 
 1. **Never require industry-wide adoption to be useful.** The artefact has to be valuable to one writer holding one song on day one.
-2. **Speak the existing standards fluently — CWR, DDEX, ISWC, IPI, TIS.** Interoperate, don't replace. The replacements are the ones that died.
+2. **Speak the existing standards fluently — CWR 2.1/2.2, DDEX (`MWL`, `MWN`, `LoD`, `BWARM`, `CDM`, `DSR`, `ERN`, `RIN`), ISWC, ISRC, IPI, ISNI, DDEX Party ID, TIS.** Interoperate, don't replace. The replacements are the ones that died.
 3. **The canonical copy stays with the rightsholder.** No central authority. Federate, verify, reconcile.
 4. **Every assertion is attributable and reversible.** Provenance is append-only; conflicts are data, not errors.
 5. **Derived data is never asserted as fact.** Machine-extracted melody, lyrics and structure carry a confidence and a named producer, and stay `draft` until a party with standing signs them.
