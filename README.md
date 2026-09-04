@@ -61,9 +61,68 @@ Partially, in three traditions that have never been joined up.
 
 **Legal deposit** — the oldest answer and the most instructive. US copyright registration historically required a deposit copy, usually a lead sheet. The courts have already had to rule on what the actual artefact of a musical work is, and in *Skidmore v. Led Zeppelin* (9th Cir. 2020, en banc) the answer was: for works registered under the 1909 Act, the scope of the copyright is the deposit copy, not the famous recording. The legal system's manifestation of a musical work is a piece of paper in an archive.
 
-**Attempts to merge the three have a graveyard.** The International Music Joint Venture (1998–2001) dissolved without opening an office. WIPO's International Music Registry (2011) collapsed in industry infighting. The Global Repertoire Database (2008–2014) had thirteen CMOs, Google and Apple on board, and folded when committed investment was withdrawn. dotBlockchain Media tried to define a file format carrying rights alongside audio and became Verifi Media. Open Music Initiative, Mediachain and Ujo are gone. Blokur survives.
+**Attempts to merge the three have a graveyard.** The International Music Joint Venture (1998–2001) dissolved without opening an office. WIPO's International Music Registry (2011) collapsed in industry infighting. The Global Repertoire Database (2008–2014) had thirteen CMOs, Google and Apple on board, and folded when committed investment was withdrawn. dotBlockchain Media tried to define a file format carrying rights alongside audio and became Verifi Media. The Open Music Initiative published a spec, then stopped. Mediachain and Ujo are gone. Blokur survives.
 
 The pattern is unambiguous and worth stating plainly: **every attempt at a single global authoritative works database has failed, and they failed for governance reasons, not technical ones.** No rightsholder will cede the canonical copy. Any design that needs universal buy-in to be useful is dead before it starts.
+
+### Reading the graveyard properly
+
+**GRD (2008–2014)**
+
+Convened in September 2008 by EU Competition Commissioner Neelie Kroes' Online Commerce Roundtable. It ran an RFI to more than eighty organisations, an RFP, and a Deloitte-managed scoping study involving 450+ individuals across six continents. The chosen technology was **ICE**, live since January 2010 and already running the distributions for PRS, MCPS and STIM, with **FastTrack** added later because societies were using it.
+
+Setup was budgeted at **€23–32m**, annual operating cost at **€6.4–11.6m**, split between societies by size. The projected saving was **0.7–1% of annual global royalty revenue**. In July 2014 it was shelved with **$13.7m of debt** and nothing in production. ASCAP is reported to have been the first to stop funding it.
+
+None of what went wrong was technical:
+
+- **The savings accrued to the wrong balance sheet.** GRD's efficiency came from eliminating duplicated data processing, which is the societies' operating cost base and therefore part of what their commission is charged against. It asked intermediaries to fund their own disintermediation, for about 1% of revenue.
+- **It was worth nothing until almost everyone joined.** Its FAQ conceded that participation could not be compelled — attempting to would likely have breached competition law — and that it would replace nothing, since every society and publisher would still keep its own database. The payoff was entirely network effect.
+- **Six years and no artefact.** The R&D phase alone ran to May 2013, with four further phases planned over roughly three more years.
+
+Its FAQ, in 2012, on whether it would use CWR:
+
+> *"CWR doesn't accommodate registration of agreements information and also mandate information. This is one of the design issues that we need to address."*
+
+`agreements` and `mandates` are in the `.work` schema for the reason the GRD working group gave first.
+
+**IMJV (1998–2001)**
+
+Buma/Stemra, PRS and ASCAP, later SOCAN. It reached 21% of world repertoire and dissolved without opening a single office. GEMA declined to join because the arrangement required it to make its own staff redundant to make room for Stemra's; smaller societies concluded they would be redundant if it launched.
+
+So the blocker was headcount rather than schema. A design whose adoption implies that the person approving it loses their job does not get approved — which means the artefact has to be adoptable by one person, without a committee, and has to make existing back-office work cheaper rather than unnecessary.
+
+**WIPO IMR (2011)**
+
+Google offered to fund it. WIPO ended the partnership fearing it would hand Google too much influence, tried to fund it itself, and the project dissolved in label-versus-publisher infighting. Whoever pays for a registry is assumed to control it, which is why nobody can pay for one.
+
+**Open Music Initiative (2016–~2020)**
+
+The closest precedent to this project in intent. Its API specification — [omi/api-specs](https://github.com/omi/api-specs) — states the goal as *"Minimal Viable Interoperability"*, federated and distributed, "while not requiring ecosystem participants to give wholesale access to their data, or requiring registration in a centralized system," and reuses DDEX rather than reinventing it. That is design constraints 1, 2 and 3 below, written in 2017.
+
+Two things in it are worth taking:
+
+- **`Attestation` attaches to the mapping, not the entity.** OMI modelled `RecordingAndWorks`, `WorkAndRecordings` and `WorkContributors` as first-class objects each carrying an `Attestation` — an `Attestor` id, `created`, `expires`, `territory` and a **`confidence` float from 0.0 to 1.0**. The claim that *this recording embodies this work* is usually the one that is wrong, so it carries its own provenance rather than inheriting the work's. [example.work](example.work) now does this on `evidence[].attestation` and `derivation[].attestation`, the latter at `0.81` confidence from a cover-identification model, corroborated by a human.
+- **An `ext` extension convention**, so an implementation can carry proprietary fields without forking the schema and without them being silently dropped in transit. Adopted as a reverse-DNS-namespaced top-level `ext` object.
+
+`api-specs` is a single `apiary.apib` file with one commit author, no releases, no listed contributors, last touched in 2017. The other five repositories — gateways to MusicBrainz and Hyperledger Sawtooth, a federated-query proof of concept — were all last updated on 3 November 2017. The organisation spent 2019 drafting and ratifying bylaws, articles of organization, corporate purposes, a membership agreement and an intellectual property policy: six governance PDFs for a specification that had been dead for two years. The surviving artefact is RAIDAR, a student licensing app.
+
+The spec's own defects are instructive too, since a 200-member consortium made most of the mistakes listed under [model corrections](#model-corrections): splits as a single `split: 1.0` **float** per party, undivided by right; `territory` as an ISO 3166 string with no inclusion/exclusion; no agreements; no time dimension; and, in the published specification, `iswc: US-TEY-09-00057` — an ISRC sitting in the ISWC field.
+
+**dotBlockchain / `.bc` (2016–)**
+
+The closest precedent to `.work` as a format. Benji Rogers' proposal was a new music file — `.bc` instead of `.mp3` — bundling audio together with "minimum viable data" so that the rights information could not be separated from the recording. Two choices killed it:
+
+- **It wrapped the audio.** A container replacing MP3 is useless until players, encoders, DSPs and delivery pipelines support it, which puts universal buy-in back in as a precondition.
+- **It was patented.** US application 20200034792, granted as US 11,593,761, assigned to Dot Blockchain Music, Inc. A patented format makes the first question a lawyer's question, and that is the cost that kills adoption. The company became Verifi Media, a vendor.
+
+`.work` holds a **digest and locators** rather than the audio for the same reason. The split is usually justified by size — 10–100 KB of rights data against a 30–60 MB WAV — and it also means nothing in the audio pipeline has to change for a `.work` file to be useful to the person holding it.
+
+### What this changes here
+
+- The `.work` schema stays unpatented and unlicensed, with no membership, no implementation licence and no consortium. The cost of adopting it must never exceed "read the schema."
+- Confidence and attestation now sit on **relationships** — work↔recording and work↔parent-work — and not only on content components.
+- A namespaced `ext` object, so proprietary fields survive a round trip instead of being dropped.
+- Two additional design constraints, below, from GRD and IMJV.
 
 ### The INVOKE work package
 
@@ -210,7 +269,7 @@ TRL  groups=1  transactions=1  records=…
 
 Note the German sub-publishing deal surviving the projection intact: `World / include`, then `Germany / exclude` on the original publisher, then `Germany / include` on the sub-publisher. Three `SPT` records expressing something an ISO country array structurally cannot.
 
-The remaining gaps are all field-width and vocabulary detail, and every one of them is the kind that fails at the society rather than at the schema:
+The remaining gaps are field-width and vocabulary detail. They fail at the society rather than at the schema:
 
 - **`HDR` Sender ID is nine characters and an IPI Name Number is eleven.** CWR's rule is that a sender whose IPI exceeds nine digits puts the leading two digits in the **Sender Type** field and the remaining nine in **Sender ID** — so `00555000111` serialises as type `00`, id `555000111`, not as `PB` plus the whole number.
 - **Submitter Work # is fourteen characters and a ULID is twenty-six.** `work_id` cannot be the submitter work number. `identity.submitter_work_number` carries a short, stable, submitter-scoped key alongside it, and the mapping between the two is the thing `ACK` reconciliation joins on.
@@ -236,7 +295,7 @@ CWR can express *who owns what*. It cannot express *what the song is*, *who may 
 
 ### The interpolation trap
 
-Worth being concrete about one case, because it is the sharpest instance and the example file is built around it.
+One case is worth spelling out, since the example file is built around it.
 
 "Salt Water" is an original work containing a two-bar cleared interpolation of "Harbour Lights". CWR makes you choose between two wrong answers:
 
@@ -245,7 +304,7 @@ Worth being concrete about one case, because it is the sharpest instance and the
 
 There is no third option, and the clearance itself has nowhere to go at all. Ten per cent of publisher receipts, worldwide, in perpetuity, is an obligation that does not touch ownership — the split still totals `10000` bps — and CWR only models ownership. So it lives in `clearances[].consideration` with `affects_ownership: false`, projects into the DDEX `MWL` grant, and projects into CWR not at all.
 
-A format that cannot distinguish *derived from* from *is a version of*, and cannot record what the derivation cost, is not a description of a work. It is a registration message.
+CWR cannot distinguish *derived from* from *is a version of*, and cannot record what the derivation cost.
 
 That asymmetry is the entire argument for the format existing.
 
@@ -299,7 +358,7 @@ Layered cheapest first:
 | OpenTimestamps → Bitcoin anchor | free | public anchor, no wallet or token, no legal presumption |
 | US Copyright Office registration | ~$45 | the only one that unlocks statutory damages |
 
-**"Qualified" is a term of art.** It means the timestamping authority appears on an EU member state's Trusted List. A free RFC 3161 service runs the identical protocol and is cryptographically just as sound, but carries no Article 41 presumption — which is why [example.work](example.work) records `qualified: false` against its timestamp instead of quietly implying otherwise.
+**"Qualified" is a term of art.** It means the timestamping authority appears on an EU member state's Trusted List. A free RFC 3161 service runs the identical protocol and is cryptographically just as sound, but carries no Article 41 presumption — which is why [example.work](example.work) records `qualified: false` against its timestamp.
 
 ### Automate deposit, don't replace it
 
@@ -730,6 +789,8 @@ Learned from the graveyard above, and non-negotiable:
 3. **The canonical copy stays with the rightsholder.** No central authority. Federate, verify, reconcile.
 4. **Every assertion is attributable and reversible.** Provenance is append-only; conflicts are data, not errors.
 5. **Derived data is never asserted as fact.** Machine-extracted melody, lyrics and structure carry a confidence and a named producer, and stay `draft` until a party with standing signs them.
+6. **Whoever adopts it captures the value.** GRD's savings landed on someone else's balance sheet — it asked societies to fund the elimination of their own operating margin, for around 1% of industry revenue. If the benefit of producing a work package does not accrue to the party producing it, the party will not produce it.
+7. **The cost of adoption is reading the schema.** No patent, no implementation licence, no membership, no consortium, no committee. dotBC was patented and OMI required an IP policy; both made the first question a lawyer's question. And per IMJV, it has to be adoptable by one person whose job it does not threaten.
 
 ---
 
