@@ -90,14 +90,13 @@
       "size": 48210944,
       "isrc": "GBAAA2600137",
       "recorded_at": "2026-02-18",
-      "attestation": {
-        "claim": "recording_embodies_work",
-        "attestor": "01J8QK4WRITERMALIMCCALLA00",
-        "created": "2026-02-19T16:02:00Z",
-        "expires": null,
-        "territory": { "tis_code": 2136, "indicator": "I" },
-        "confidence": 1.0
-      },
+      "attestations": [
+        {
+          "claim": "recording_embodies_work",
+          "attestor": "01J8QK4WRITERMALIMCCALLA00",
+          "created": "2026-02-19T16:02:00Z"
+        }
+      ],
       "locators": [
         "https://cdn.invoke.works/blobs/sha256/0ad3f81b",
         "s3://mali-mccalla-archive/salt-water/reference.wav",
@@ -333,14 +332,20 @@
       "parent_iswc": "T-010.402.117-1",
       "parent_title": "Harbour Lights",
       "description": "Two-bar melodic interpolation in the pre-chorus.",
-      "attestation": {
-        "claim": "work_derives_from_work",
-        "attestor": "invoke:pipeline/cover-id@0.3.1",
-        "created": "2026-03-28T11:40:19Z",
-        "expires": null,
-        "confidence": 0.81,
-        "corroborated_by": "01J8QK4WRITERMALIMCCALLA00"
-      },
+      "attestations": [
+        {
+          "claim": "work_derives_from_work",
+          "attestor": "invoke:pipeline/cover-id@0.3.1",
+          "created": "2026-03-28T11:40:19Z",
+          "confidence": 0.81
+        },
+        {
+          "claim": "work_derives_from_work",
+          "attestor": "01J8QK4WRITERMALIMCCALLA00",
+          "created": "2026-03-30T09:15:02Z",
+          "note": "Confirmed by ear against the Harbour Lights master before seeking clearance."
+        }
+      ],
       "cleared": true,
       "clearance_id": "clr-001"
     }

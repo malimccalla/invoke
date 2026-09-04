@@ -101,7 +101,7 @@ The closest precedent to this project in intent. Its API specification — [omi/
 
 Two things in it are worth taking:
 
-- **`Attestation` attaches to the mapping, not the entity.** OMI modelled `RecordingAndWorks`, `WorkAndRecordings` and `WorkContributors` as first-class objects each carrying an `Attestation` — an `Attestor` id, `created`, `expires`, `territory` and a **`confidence` float from 0.0 to 1.0**. The claim that *this recording embodies this work* is usually the one that is wrong, so it carries its own provenance rather than inheriting the work's. [example.work](example.work) now does this on `evidence[].attestation` and `derivation[].attestation`, the latter at `0.81` confidence from a cover-identification model, corroborated by a human.
+- **`Attestation` attaches to the mapping, not the entity.** OMI modelled `RecordingAndWorks`, `WorkAndRecordings` and `WorkContributors` as first-class objects each carrying an `Attestation` — an `Attestor` id, `created`, `expires`, `territory` and a **`confidence` float from 0.0 to 1.0**. The nodes in a rights graph are rarely what's wrong; the edges are. An edge can be false while both endpoints are correct and verified, and there is nowhere else for that error to live. [example.work](example.work) carries `attestations[]` on `evidence` and `derivation`, taking `attestor`, `created` and `confidence` and dropping `expires` and `territory` as unused here.
 - **An `ext` extension convention**, so an implementation can carry proprietary fields without forking the schema and without them being silently dropped in transit. Adopted as a reverse-DNS-namespaced top-level `ext` object.
 
 `api-specs` is a single `apiary.apib` file with one commit author, no releases, no listed contributors, last touched in 2017. The other five repositories — gateways to MusicBrainz and Hyperledger Sawtooth, a federated-query proof of concept — were all last updated on 3 November 2017. The organisation spent 2019 drafting and ratifying bylaws, articles of organization, corporate purposes, a membership agreement and an intellectual property policy: six governance PDFs for a specification that had been dead for two years. The surviving artefact is RAIDAR, a student licensing app.
@@ -120,7 +120,7 @@ The closest precedent to `.work` as a format. Benji Rogers' proposal was a new m
 ### What this changes here
 
 - The `.work` schema stays unpatented and unlicensed, with no membership, no implementation licence and no consortium. The cost of adopting it must never exceed "read the schema."
-- Confidence and attestation now sit on **relationships** — work↔recording and work↔parent-work — and not only on content components.
+- Attestations sit on **relationships** — work↔recording and work↔parent-work — and not only on content components. They are an ordered array rather than a single object, so corroboration is a second attestation rather than a bespoke field. **`confidence` is present only when the attestor is a model.** Its absence means a party asserted the claim rather than measured it, which is not the same as measuring it at `1.0`.
 - A namespaced `ext` object, so proprietary fields survive a round trip instead of being dropped.
 - Two additional design constraints, below, from GRD and IMJV.
 
@@ -210,6 +210,7 @@ And because it diffs. A `.work` file in a git repository turns a change of split
 - **A German sub-publisher with zero ownership and full collection** in that territory — expressed as `World / include` minus `Germany / exclude` on the original publisher, and `Germany / include` on the sub-publisher. This is the include/exclude TIS machinery doing the job an ISO country array cannot.
 - **Every credit is time-bounded**, and agreements carry `retention_end_date` and `post_term_collection_end_date` separately from `end_date`.
 - **A cleared interpolation** of another work, with the clearance document referenced by digest and its consideration modelled as a `royalty_participation` carrying `affects_ownership: false` — so the obligation is visible without corrupting the split.
+- **The interpolation claim itself is attested twice** — a cover-identification model at `0.81`, then the writer confirming it by ear two days later. A machine accusing a song of derivation is a claim with money attached, and `0.81` is not a basis for a clearance on its own.
 - **Structured names and a merge target.** Natural persons carry `last_name` / `first_name` and no concatenated display string; every party carries a nullable `canonical_party_id`, plus ISNI and DDEX Party ID alongside the IPI numbers.
 - **A split registration outcome** — PRS accepted (`AS`), the MLC returned a conflict (`CO`) with an overclaim message. Both are data, neither is an error.
 - **`clearability` computed to 5000 bps and `one_stop: false`**, naming the two specific parties blocking an instant sync grant.
