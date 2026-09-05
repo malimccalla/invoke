@@ -1,0 +1,145 @@
+{
+  "$schema": "https://invoke.works/schema/work/v1",
+  "spec_version": "1.0.0",
+
+  "work_id": "01JB0000000000000000005432",
+  "version": 1,
+  "parent": null,
+  "created_at": "2026-09-05T00:00:00Z",
+  "status": "draft",
+
+  "identity": {
+    "iswc": null,
+    "submitter_work_number": "BAD0000000001",
+    "title": "Shares Do Not Total",
+    "alternative_titles": [],
+    "language": "eng",
+    "duration_ms": null,
+    "version_type": "ORI",
+    "music_arrangement": null,
+    "lyric_adaptation": null,
+    "distribution_category": "POP",
+    "text_music_relationship": "MTX",
+    "composite_type": null,
+    "excerpt_type": null,
+    "recorded_indicator": false,
+    "grand_rights_ind": false,
+    "created_year": 2026
+  },
+
+  "content": [],
+  "evidence": [],
+  "renders": [],
+
+  "rights": {
+    "parties": [
+      {
+        "party_id": "01JB000000000000000000WRTR",
+        "canonical_party_id": null,
+        "type": "natural_person",
+        "last_name": "Doe",
+        "first_name": "Jane",
+        "ipi_name_number": null,
+        "ipi_base_number": null,
+        "isni": null,
+        "ddex_party_id": null,
+        "societies": { "pr": null, "mr": null, "sr": null }
+      },
+      {
+        "party_id": "01JB000000000000000000PBSH",
+        "canonical_party_id": null,
+        "type": "legal_entity",
+        "name": "Minimal Publishing Ltd",
+        "ipi_name_number": null,
+        "ipi_base_number": null,
+        "isni": null,
+        "ddex_party_id": null,
+        "societies": { "pr": null, "mr": null, "sr": null }
+      }
+    ],
+
+    "credits": [
+      {
+        "credit_id": "c-001",
+        "party_id": "01JB000000000000000000WRTR",
+        "writer_designation": "CA",
+        "controlled": true,
+        "cwr_record": "SWR",
+        "agreement_id": "agr-001",
+        "ownership_bps": { "pr": 5000, "mr": 5000, "sr": 5000 },
+        "effective_from": "2026-01-01",
+        "effective_to": null,
+        "territory_claims": [
+          {
+            "tis_code": 2136,
+            "tis_name": "World",
+            "indicator": "I",
+            "collection_bps": { "pr": 5000, "mr": 5000, "sr": 5000 }
+          }
+        ]
+      },
+      {
+        "credit_id": "c-002",
+        "party_id": "01JB000000000000000000PBSH",
+        "publisher_type": "E",
+        "controlled": true,
+        "cwr_record": "SPU",
+        "agreement_id": "agr-001",
+        "publisher_sequence": 1,
+        "ownership_bps": { "pr": 4000, "mr": 4000, "sr": 4000 },
+        "effective_from": "2026-01-01",
+        "effective_to": null,
+        "territory_claims": [
+          {
+            "tis_code": 2136,
+            "tis_name": "World",
+            "indicator": "I",
+            "collection_bps": { "pr": 4000, "mr": 4000, "sr": 4000 }
+          }
+        ]
+      }
+    ],
+
+    "publisher_for_writer": [
+      { "writer_credit_id": "c-001", "publisher_credit_id": "c-002" }
+    ],
+
+    "agreements": [
+      {
+        "agreement_id": "agr-001",
+        "agreement_type": "OS",
+        "assignor_party_id": "01JB000000000000000000WRTR",
+        "assignee_party_id": "01JB000000000000000000PBSH",
+        "start_date": "2026-01-01",
+        "end_date": null,
+        "retention_end_date": null,
+        "post_term_collection_end_date": null,
+        "prior_royalty_status": "N",
+        "sales_manufacture_clause": null,
+        "admin_commission_bps": null,
+        "document_digest": null
+      }
+    ],
+
+    "totals_bps": {
+      "ownership": { "pr": 10000, "mr": 10000, "sr": 10000 },
+      "valid": true
+    }
+  },
+
+  "derivation": [],
+  "clearances": [],
+  "mandates": [],
+  "clearability": null,
+  "registrations": [],
+
+  "provenance_log": {
+    "digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "media_type": "application/jsonl",
+    "locators": []
+  },
+  "provenance_recent": [],
+
+  "timestamps": [],
+  "signatures": []
+}

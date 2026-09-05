@@ -1,0 +1,57 @@
+{
+  "corpus_version": "1.0.0-draft",
+  "spec_version": "1.0.0",
+  "description": "Conformance fixtures for the .work format. A conformant validator MUST accept every document under valid/ with no WORK- violations, and MUST reject every document under invalid/ reporting exactly the rule identifiers listed against it.",
+
+  "valid": [
+    {
+      "path": "valid/minimal.work",
+      "description": "The smallest document that satisfies every rule. One controlled writer, one publisher, one agreement, a PWR link, shares totalling 10000 per right, no content and no signatures."
+    },
+    {
+      "path": "../example.work",
+      "description": "The full worked example. Two writers with only one controlled, a German sub-publisher expressed as include/exclude TIS claims, a cleared interpolation whose consideration does not affect ownership, a split registration outcome, a consent-limited render, and a double attestation on the derivation."
+    }
+  ],
+
+  "invalid": [
+    {
+      "path": "invalid/shares-do-not-total.work",
+      "violates": ["WORK-032"],
+      "description": "Publisher ownership is 4000 rather than 5000, so ownership totals 9000 per right. totals_bps still claims 10000 and valid:true, so this also tests that a validator recomputes rather than trusting the declared total."
+    },
+    {
+      "path": "invalid/missing-pwr.work",
+      "violates": ["WORK-036"],
+      "description": "publisher_for_writer is empty while a controlled SWR credit exists. There is no chain of title, and the CWR projection would be rejected by the society."
+    },
+    {
+      "path": "invalid/merged-role-vocabulary.work",
+      "violates": ["WORK-034"],
+      "description": "A single credit carries both writer_designation and publisher_type, which describes a composer-publisher. The two CWR vocabularies are distinct and must not be merged."
+    }
+  ],
+
+  "todo": [
+    { "path": "invalid/bad-iswc-check-digit.work", "violates": ["WORK-011"] },
+    { "path": "invalid/mod-without-arrangement.work", "violates": ["WORK-012"] },
+    { "path": "invalid/submitter-work-number-too-long.work", "violates": ["WORK-013"] },
+    { "path": "invalid/duplicate-content-role.work", "violates": ["WORK-020"] },
+    { "path": "invalid/confidence-on-party-attestation.work", "violates": ["WORK-024"] },
+    { "path": "invalid/attestations-out-of-order.work", "violates": ["WORK-025"] },
+    { "path": "invalid/unresolved-reference.work", "violates": ["WORK-031"] },
+    { "path": "invalid/float-share.work", "violates": ["WORK-033"] },
+    { "path": "invalid/control-record-mismatch.work", "violates": ["WORK-035"] },
+    { "path": "invalid/exclusion-with-nonzero-shares.work", "violates": ["WORK-037"] },
+    { "path": "invalid/controlled-without-agreement.work", "violates": ["WORK-038"] },
+    { "path": "invalid/retention-precedes-end-date.work", "violates": ["WORK-041"] },
+    { "path": "invalid/cleared-without-clearance-id.work", "violates": ["WORK-050"] },
+    { "path": "invalid/render-use-class-not-mandated.work", "violates": ["WORK-052"] },
+    { "path": "invalid/render-use-class-excluded.work", "violates": ["WORK-053"] },
+    { "path": "invalid/partial-consent-unrestricted.work", "violates": ["WORK-054"] },
+    { "path": "invalid/one-stop-with-gaps.work", "violates": ["WORK-055"] },
+    { "path": "invalid/attested-without-signature.work", "violates": ["WORK-061"] },
+    { "path": "invalid/broken-signature.work", "violates": ["WORK-060"] },
+    { "path": "invalid/parent-set-on-version-one.work", "violates": ["WORK-004"] }
+  ]
+}
