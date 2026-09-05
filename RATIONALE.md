@@ -750,40 +750,6 @@ Learned from the graveyard above, and non-negotiable:
 6. **Whoever adopts it captures the value.** GRD's savings landed on someone else's balance sheet — it asked societies to fund the elimination of their own operating margin, for around 1% of industry revenue. If the benefit of producing a work package does not accrue to the party producing it, the party will not produce it.
 7. **The cost of adoption is reading the schema.** No patent, no implementation licence, no membership, no consortium, no committee. dotBC was patented and OMI required an IP policy; both made the first question a lawyer's question. And per IMJV, it has to be adoptable by one person whose job it does not threaten.
 
-Constraint 7 has a corollary for this repository. OMI's failure was not writing a specification; it was becoming a specification body — bylaws, articles of organization, a membership agreement and an IP policy for a spec that had been dead two years. OpenAPI went the other way: Swagger shipped tooling in 2011 and was donated as a specification in 2015, after adoption. Open Banking is not a counter-example, because the CMA legally compelled nine banks to implement it, which is the opposite of constraint 1.
+Constraint 7 also determines how the format itself is published. OMI's failure was not writing a specification; it was becoming a specification body — bylaws, articles of organization, a membership agreement and an IP policy for a spec that had been dead two years. OpenAPI went the other way: Swagger shipped tooling in 2011, and the specification was donated to the Linux Foundation in 2015, after adoption. Open Banking is not a counter-example, because the CMA legally compelled nine banks to implement it, which is the opposite of constraint 1.
 
-So the specification here is descriptive of something that works, not prescriptive of something that might. The order is validator, fixtures, schema, then document.
-
----
-
-## Implementation notes
-
-**These belong in [invoke-works](https://github.com/malimccalla/invoke-works), not here.** Parked so nothing is lost in the split.
-
-Python, **FastAPI**, PostgreSQL. Pydantic models as the domain boundary; share and chain-of-title invariants enforced in the domain layer, not in route handlers.
-
-```
-GET    /works/{id}
-POST   /works
-GET    /works/{id}/credits
-GET    /works/{id}/package            # the signed work package
-GET    /works/{id}/clearability
-GET    /interested-parties/{id}
-POST   /agreements
-POST   /registrations                 # generate + deliver CWR
-POST   /registrations/ack             # ingest ACK, reconcile, surface conflicts
-POST   /licence-requests
-GET    /licences/{id}
-GET    /royalties/statements/{id}
-GET    /payouts/{id}
-```
-
-**Works registry** — canonical store for works, parties, agreements and splits, with per-right totals and chain-of-title completeness enforced as domain invariants.
-
-**Work package builder** — assembles, hashes and signs the artefact described above.
-
-**CWR engine** — generate conformant `NWR`/`REV` transactions from the internal model; parse and reconcile `ACK` files; surface `CO` conflicts as first-class objects rather than log lines.
-
-**Licensing engine** — mandate evaluation, clearability, quoting, licence issuance.
-
-**Settlement** — usage ingestion (DDEX **DSR**), matching, split application per right and territory, claim detail and overclaim responses (DDEX **CDM** Parts 3 and 5), commission netting, auditable ledger, payouts.
+So the specification is descriptive of something that works rather than prescriptive of something that might, and the order of work is validator, fixtures, schema, then document.

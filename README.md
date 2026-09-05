@@ -1,6 +1,6 @@
-# INVOKE
+# `.work`
 
-INVOKE is an independent songwriting collective based in London, and the home of **`.work`** — an open format for musical works.
+An open format for musical works.
 
 A `.work` file is a signed, content-addressed, versioned JSON document describing a musical work: who wrote it, who publishes and administers it, in which territory, for which right, at what share, under which agreement — plus the musical content that anchors it and the provenance of every assertion in it.
 
@@ -57,11 +57,36 @@ Learned from every previous attempt at this problem, all of which failed — [in
 
 ## Status
 
-`1.0.0-draft`. The format is drafted and the example is valid. The JSON Schema is not yet published at its `$schema` URL and there is no validator yet. Open questions are listed rather than hidden, in [SPEC Appendix A](SPEC.md#appendix-a--open-questions).
+`1.0.0-draft`. The object model, canonicalisation rules and validation rules are drafted, and [example.work](example.work) is a complete conforming document. Unresolved questions are tracked in [SPEC Appendix A](SPEC.md#appendix-a--open-questions).
 
-Next, in order: publish the schema, ship a validator, fill out the conformance fixtures, then one end-to-end CWR projection.
+Roadmap:
 
-The publishing administration platform that uses this format is a separate project at **[github.com/malimccalla/invoke-works](https://github.com/malimccalla/invoke-works)** (Python / FastAPI). This repository is the format, the landing page and the design notes — not the product.
+1. Publish the JSON Schema at its `$schema` URL
+2. Release the reference validator
+3. Complete the conformance corpus — 3 of 23 fixtures written
+4. CWR `NWR` projection
+
+---
+
+## Tooling
+
+Tooling is developed and versioned separately from the specification. None of it is required in order to use the format — a `.work` file is a JSON document, and any JSON library can read one.
+
+| | |
+| --- | --- |
+| **Reference validator** | Checks a document against [SPEC §8](SPEC.md#8-validation-rules) and the [conformance corpus](conformance/). In development. |
+| **Projections** | `.work` → CWR, DDEX `MWL` / `MWN`, lead sheet. Planned. |
+| **[invoke-works](https://github.com/malimccalla/invoke-works)** | Publishing administration platform built on the format. In development. |
+
+---
+
+## Maintenance
+
+The specification is maintained by [INVOKE](https://invoke.works), an independent songwriting collective based in London.
+
+`.work` is an open format. It is free to implement, requires no licence, membership or registration, and is covered by no patent. Implementations are neither certified nor endorsed, and none is privileged over another.
+
+Three related names: **`.work`** is the format, **invoke-works** is a platform that implements it, and **INVOKE** maintains the format and operates the platform.
 
 ---
 

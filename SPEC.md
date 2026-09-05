@@ -707,21 +707,22 @@ A parallel registration for `application/vnd.invoke.workpkg+zip` with extension 
 
 This specification and the accompanying JSON Schema are published under **CC BY 4.0** (text) and **Apache-2.0** (schema and fixtures).
 
-**No patent has been or will be sought on this format, its schema, or any mechanism described in this document.** Implementing it requires no licence, no membership, no registration and no agreement of any kind. The cost of adoption is reading this document.
+**No patent has been or will be sought on this format, its schema, or any mechanism described in this document.** Implementing it requires no licence, no membership, no registration and no agreement of any kind.
 
-This is a deliberate response to prior art. A format encumbered by a patent makes the first implementation question a legal question, and that cost is what prevents adoption. See [RATIONALE.md](RATIONALE.md#reading-the-graveyard).
+Implementations are neither certified nor endorsed. Conformance is a property a document either has or does not, testable against [§8](#8-validation-rules) and the [conformance corpus](conformance/).
 
 ---
 
 ## Appendix A — Open questions
 
-Flagged rather than hidden. These are unresolved in `1.0.0-draft`:
+Unresolved in `1.0.0-draft`:
 
-1. **`WORK-042` may be unenforceable in isolation.** Collection totals across a TIS hierarchy require resolving overlapping include/exclude claims, and non-controlled parties legitimately carry no territory claims. The rule may need to be scoped to controlled parties only.
-2. **Attestation overlaps `provenance_log`.** Attestation is current state on an edge; provenance is the chronological log. Both express confidence and attribution. One should probably be derived from the other.
-3. **No revocation or key rotation.** [§10](#10-security-considerations) names the gap without solving it.
-4. **`version_type` cannot express "original work containing a cleared interpolation".** CWR forces a choice between `ORI`, which discards the derivation, and `MOD`, which asserts the whole work is a version of the parent. `.work` records both faithfully but cannot project both.
+1. **`WORK-042` may be unenforceable as written.** Collection totals across a TIS hierarchy require resolving overlapping include/exclude claims, and non-controlled parties legitimately carry no territory claims. The rule may need scoping to controlled parties.
+2. **`attestations` overlaps `provenance_log`.** An attestation is current state on a relationship; provenance is the chronological log. Both carry attribution and confidence, and one should be derived from the other.
+3. **No revocation or key rotation.** [§10](#10-security-considerations) states the gap.
+4. **`version_type` cannot express "original work containing a cleared interpolation".** CWR requires a choice between `ORI`, which discards the derivation, and `MOD`, which asserts the whole work is a version of the parent. A `.work` document records both, but cannot project both.
 5. **No canonical form for `.workpkg` ZIP entries**, so a `.workpkg` is not itself reproducibly digestible.
+6. **The `$schema` host, the `vnd.invoke` media type and the `invoke.works` extension namespace are organisation-specific.** The `vnd.` tree denotes a vendor format. Whether to move to a neutral host and media type is open.
 
 ---
 

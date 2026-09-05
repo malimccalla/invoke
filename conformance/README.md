@@ -23,9 +23,11 @@ Each invalid fixture is `valid/minimal.work` with a single mutation. Diff them a
 diff <(jq -S . valid/minimal.work) <(jq -S . invalid/missing-pwr.work)
 ```
 
-## Status
+## Coverage
 
-`manifest.json` declares the intended corpus. The `todo` array lists fixtures that are specified but not yet written — twenty of them, one per remaining validation rule. They are listed rather than omitted so that corpus coverage is legible: **3 of 23 invalid fixtures exist.**
+`manifest.json` declares the intended corpus. The `todo` array names fixtures that are specified but not yet written, one per remaining validation rule.
+
+**3 of 23 invalid fixtures written.**
 
 ## Adding a fixture
 
