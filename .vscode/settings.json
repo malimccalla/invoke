@@ -1,0 +1,7 @@
+{
+  "files.associations": {
+    "*.work": "json"
+  },
+  // The $schema URL in .work files is not published yet.
+  "json.schemaDownload.enable": false
+}

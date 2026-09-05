@@ -1,0 +1,26 @@
+# .work
+
+> An open format for musical works: a signed, content-addressed, versioned JSON document recording a song's identity, rights graph, musical content and the provenance of every assertion in it. Maintained by INVOKE, an independent songwriting collective based in London.
+
+A `.work` file records who wrote a song, who publishes and administers it, in which territory, for which right, at what share and under which agreement, together with digests of the musical content that anchors it. The manifest holds digests and locators rather than audio, so nothing in the audio pipeline has to change in order to use it.
+
+It projects into existing standards rather than replacing them: CWR 2.1/2.2 for society registration, and the DDEX works stack (MWL, MWN, LoD, BWARM, CDM) for licensing and claims. Shares are integer basis points split by right and never combined, territories are CISAC TIS codes carrying include/exclude indicators, and parties are keyed on IPI Name Number, IPI Base Number, ISNI and DDEX Party ID.
+
+Status is `1.0.0-draft`. The JSON Schema is not yet published at its `$schema` URL and there is no reference validator yet.
+
+The format is free to implement. It carries no patent and requires no licence, membership or registration. Implementations are neither certified nor endorsed, and none is privileged over another.
+
+## Specification
+
+- [Specification](https://raw.githubusercontent.com/malimccalla/invoke/main/SPEC.md): Normative. The object model field by field, canonicalisation and signature construction (RFC 8785 JCS), 42 numbered validation rules, conformance classes for producers, consumers and validators, security and privacy considerations, and the IANA media type template.
+- [Worked example](https://raw.githubusercontent.com/malimccalla/invoke/main/example.work): A complete conforming document. Two writers with only one controlled, a German sub-publisher expressed as include/exclude TIS claims, a cleared interpolation whose consideration does not affect ownership, a consent-limited AI render, and a split registration outcome where one society accepted and another returned a conflict.
+- [Conformance corpus](https://github.com/malimccalla/invoke/tree/main/conformance): Valid and invalid fixtures a validator must pass, each invalid one mapped to the rule identifiers it violates.
+
+## Background
+
+- [Rationale](https://raw.githubusercontent.com/malimccalla/invoke/main/RATIONALE.md): Non-normative. Why a sound recording has an artefact and a musical work does not, why CWR is a message rather than a document, how the format projects into CWR and DDEX, and post-mortems of the attempts that failed — the Global Repertoire Database, the International Music Joint Venture, WIPO's International Music Registry, the Open Music Initiative and dotBlockchain.
+
+## Optional
+
+- [Repository](https://raw.githubusercontent.com/malimccalla/invoke/main/README.md): Front door, roadmap and tooling status.
+- [INVOKE](https://invoke.works): The songwriting collective that maintains the format.

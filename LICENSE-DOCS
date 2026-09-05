@@ -1,0 +1,29 @@
+Creative Commons Attribution 4.0 International (CC BY 4.0)
+
+This licence covers the specification text in this repository:
+
+    SPEC.md
+    RATIONALE.md
+    README.md
+    conformance/README.md
+
+Copyright (c) 2026 INVOKE
+
+You are free to share and adapt this material for any purpose, including
+commercially, provided you give appropriate credit, provide a link to the
+licence, and indicate if changes were made.
+
+The full licence text is available at:
+
+    https://creativecommons.org/licenses/by/4.0/legalcode
+
+A human-readable summary is available at:
+
+    https://creativecommons.org/licenses/by/4.0/
+
+The JSON Schema, the conformance fixtures and any accompanying code are
+licensed separately under Apache-2.0. See LICENSE.
+
+No patent has been or will be sought on the .work format, its schema, or any
+mechanism described in the specification. Implementing it requires no licence,
+membership, registration or agreement of any kind.

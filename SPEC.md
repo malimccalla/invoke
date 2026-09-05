@@ -705,7 +705,7 @@ A parallel registration for `application/vnd.invoke.workpkg+zip` with extension 
 
 ## 13. Licence and patent position
 
-This specification and the accompanying JSON Schema are published under **CC BY 4.0** (text) and **Apache-2.0** (schema and fixtures).
+This specification and the accompanying JSON Schema are published under **[CC BY 4.0](LICENSE-DOCS)** (text) and **[Apache-2.0](LICENSE)** (schema and fixtures).
 
 **No patent has been or will be sought on this format, its schema, or any mechanism described in this document.** Implementing it requires no licence, no membership, no registration and no agreement of any kind.
 

@@ -92,6 +92,6 @@ Three related names: **`.work`** is the format, **invoke-works** is a platform t
 
 ## Licence
 
-Specification text under CC BY 4.0. Schema and fixtures under Apache-2.0. No patent has been or will be sought on this format. See [SPEC §13](SPEC.md#13-licence-and-patent-position).
+Specification text under [CC BY 4.0](LICENSE-DOCS). Schema and fixtures under [Apache-2.0](LICENSE). No patent has been or will be sought on this format. See [SPEC §13](SPEC.md#13-licence-and-patent-position).
 
 Contact: `mali@invoke.works`
