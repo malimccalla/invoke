@@ -6,19 +6,24 @@ A `.work` file records who wrote a song, who publishes and administers it, in wh
 
 It projects into existing standards rather than replacing them: CWR 2.1/2.2 for society registration, and the DDEX works stack (MWL, MWN, LoD, BWARM, CDM) for licensing and claims. Shares are integer basis points split by right and never combined, territories are CISAC TIS codes carrying include/exclude indicators, and parties are keyed on IPI Name Number, IPI Base Number, ISNI and DDEX Party ID.
 
+It also records what it is not sure about. A derivation carries a disposition rather than a cleared boolean, so "they refused" and "we never asked" are different states; a claim made against the work lives in disputes[] and is recorded without being adjudicated; machine-derived values carry a named producer and a confidence; and an optional JSON-LD context maps the document onto schema.org, PROV-O and ODRL without RDF becoming a requirement.
+
+Validation rules are tiered by what is needed to decide them: L1 structural, L2 referential, L3 external. An L1 validator is conformant.
+
 Status is `1.0.0-draft`. The JSON Schema is not yet published at its `$schema` URL and there is no reference validator yet.
 
 The format is free to implement. It carries no patent and requires no licence, membership or registration. Implementations are neither certified nor endorsed, and none is privileged over another.
 
 ## Specification
 
-- [Specification](https://raw.githubusercontent.com/malimccalla/invoke/main/SPEC.md): Normative. The object model field by field, canonicalisation and signature construction (RFC 8785 JCS), 42 numbered validation rules, conformance classes for producers, consumers and validators, security and privacy considerations, and the IANA media type template.
-- [Worked example](https://raw.githubusercontent.com/malimccalla/invoke/main/example.work): A complete conforming document. Two writers with only one controlled, a German sub-publisher expressed as include/exclude TIS claims, a cleared interpolation whose consideration does not affect ownership, a consent-limited AI render, and a split registration outcome where one society accepted and another returned a conflict.
-- [Conformance corpus](https://github.com/malimccalla/invoke/tree/main/conformance): Valid and invalid fixtures a validator must pass, each invalid one mapped to the rule identifiers it violates.
+- [Specification](https://raw.githubusercontent.com/malimccalla/invoke/main/SPEC.md): Normative. The object model field by field, canonicalisation and signature construction (RFC 8785 JCS), 53 numbered validation rules tiered L1/L2/L3, an optional CWR projection profile, conformance classes for producers, consumers and validators, security and privacy considerations, and the IANA media type template.
+- [Worked example](https://raw.githubusercontent.com/malimccalla/invoke/main/example.work): A complete conforming document. Two writers with only one controlled, a German sub-publisher expressed as include/exclude TIS claims, a cleared interpolation whose consideration does not affect ownership, a consent-limited AI render, publishable one-way fingerprints over the melody and bassline, and a split registration outcome where one society accepted and another returned a conflict.
+- [Conformance corpus](https://github.com/malimccalla/invoke/tree/main/conformance): Valid and invalid fixtures a validator must pass, each invalid one mapped to the rule identifiers it violates and the level at which it is decidable.
+- [Crosswalks](https://github.com/malimccalla/invoke/tree/main/mappings): Field-level mappings into CWR 2.1/2.2 and the Apache Sourcelume ProvenanceRecord, each with an explicit list of what does not survive the projection.
 
 ## Background
 
-- [Rationale](https://raw.githubusercontent.com/malimccalla/invoke/main/RATIONALE.md): Non-normative. Why a sound recording has an artefact and a musical work does not, why CWR is a message rather than a document, how the format projects into CWR and DDEX, and post-mortems of the attempts that failed — the Global Repertoire Database, the International Music Joint Venture, WIPO's International Music Registry, the Open Music Initiative and dotBlockchain.
+- [Rationale](https://raw.githubusercontent.com/malimccalla/invoke/main/RATIONALE.md): Non-normative. Why a sound recording has an artefact and a musical work does not, why CWR is a message rather than a document, how the format projects into CWR and DDEX, what happens when an infringement claim arrives after release and what the format can and cannot do about it, and post-mortems of the attempts that failed — the Global Repertoire Database, the International Music Joint Venture, WIPO's International Music Registry, the Open Music Initiative and dotBlockchain — alongside Apache Sourcelume as the live contrast.
 
 ## Optional
 

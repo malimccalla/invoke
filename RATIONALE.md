@@ -114,11 +114,28 @@ The closest precedent to `.work` as a format. Benji Rogers' proposal was a new m
 
 `.work` holds a **digest and locators** rather than the audio for the same reason. The split is usually justified by size — 10–100 KB of rights data against a 30–60 MB WAV — and it also means nothing in the audio pipeline has to change for a `.work` file to be useful to the person holding it.
 
+**Apache Sourcelume (2026–), the live contrast**
+
+Not a failure, and in the graveyard for exactly that reason. Sourcelume is an ASF project under the foundation's $10m Responsible AI initiative, defining a `ProvenanceRecord` for AI training-data provenance: dataset identity, role-tagged creators, a licence claim, and an ordered chain of custody. JSON-LD with a published context, a JSON Schema for structure, SHACL for the graph, and a `mappings/` directory of crosswalks to Croissant, the SPDX AI Profile and OTDI.
+
+It is the first thing in this list to get the governance question the other way round from OMI. Where OMI spent 2019 ratifying bylaws, articles of organization and an IP policy for a specification that had been dead two years, Sourcelume went to a foundation that already had all of those and started from the record shape. The dev list is open to anyone with no ASF affiliation required, and volunteers are organising around components rather than around committees.
+
+Three things in `0.0.1` are worth taking outright.
+
+- **No adjudication fields.** Its non-goals are explicit: there is no `verified: true/false`, because the record publishes a claim and verification is somebody else's job. An earlier draft of this format carried `rights.totals_bps.valid` — a document's own verdict on whether its own arithmetic was correct. That is the same anti-pattern, and a consumer that reads it has stopped validating. It has been removed.
+- **References, never embeddings.** A `custodyChain.agent` IRI may point at another `ProvenanceRecord`, and that record is *not* nested inside the current one. The reasons given are exactly right: a record is signed as one unit, so an embedded copy leaves it unclear whose signature covers it; an embedded copy can never receive the original's corrections; and a graph of linked records is what graph storage actually wants. `derivation.parent_locators` follows it.
+- **Non-goals stated as non-goals, with their status.** `0.0.1` distinguishes what was deliberately deferred from what is still being argued about, and says which is which. That is a better instrument than a flat list of open questions, because a decision and an omission look identical once they are both just absences.
+
+The adjacency is not incidental. Sourcelume describes a dataset; it carries nothing per item, and a corpus of musical works has no way to evidence that any individual writer consented to `ai_training`. A `.work` document is that evidence, which is why [mappings/sourcelume.md](mappings/sourcelume.md) exists.
+
 ### What this changes here
 
 - The `.work` schema stays unpatented and unlicensed, with no membership, no implementation licence and no consortium. The cost of adopting it must never exceed "read the schema." ([SPEC §13](SPEC.md#13-licence-and-patent-position).)
 - Attestations sit on **relationships** — work↔recording and work↔parent-work — and not only on content components. They are an ordered array rather than a single object, so corroboration is a second attestation rather than a bespoke field. **`confidence` is present only when the attestor is a model.** Its absence means a party asserted the claim rather than measured it, which is not the same as measuring it at `1.0`. ([SPEC §6.16](SPEC.md#616-attestation-object).)
 - A namespaced `ext` object, so proprietary fields survive a round trip instead of being dropped. ([SPEC §6.20](SPEC.md#620-extension-object).)
+- **No field anywhere asserts that the document is correct.** Totals are declared so they can be contradicted, and a consumer recomputes. ([SPEC §6](SPEC.md#the-rights-container).)
+- **Validation is tiered.** An earlier draft required every validator to implement every rule while several rules could not be decided from the document at all. L1 is structural, L2 referential, L3 external, and an L1 validator is conformant — because the thing that has to be cheap is checking a file, not running an infrastructure. ([SPEC §8.1](SPEC.md#81-levels).)
+- **An optional JSON-LD context**, so the document can be read as a graph by adjacent provenance infrastructure without an RDF toolchain becoming the price of entry. Signing stays on RFC 8785 over the JSON; RDF canonicalisation is not used anywhere, and consumers verify before they process. ([SPEC §5.7](SPEC.md#57-json-ld).)
 - Two additional design constraints, below, from GRD and IMJV.
 
 ### The work package
@@ -206,6 +223,8 @@ And because it diffs. A `.work` file in a git repository turns a change of split
 - **Every credit is time-bounded**, and agreements carry `retention_end_date` and `post_term_collection_end_date` separately from `end_date`.
 - **A cleared interpolation** of another work, with the clearance document referenced by digest and its consideration modelled as a `royalty_participation` carrying `affects_ownership: false` — so the obligation is visible without corrupting the split.
 - **The interpolation claim itself is attested twice** — a cover-identification model at `0.81`, then the writer confirming it by ear two days later. A machine accusing a song of derivation is a claim with money attached, and `0.81` is not a basis for a clearance on its own.
+- **The derivation names the component it affects** and carries a `disposition` of `cleared` rather than a boolean, so the posture is on the record and not inferred.
+- **Publishable fingerprints** over the melody and the bassline, one-way and separately addressed as `content.fingerprint.melodic` and `content.fingerprint.bassline`.
 - **Structured names and a merge target.** Natural persons carry `last_name` / `first_name` and no concatenated display string; every party carries a nullable `canonical_party_id`, plus ISNI and DDEX Party ID alongside the IPI numbers.
 - **A split registration outcome** — PRS accepted (`AS`), the MLC returned a conflict (`CO`) with an overclaim message. Both are data, neither is an error.
 - **`clearability` computed to 5000 bps and `one_stop: false`**, naming the two specific parties blocking an instant sync grant.
@@ -281,9 +300,11 @@ Everything CWR needs is in the `.work` file. Much of the `.work` file has nowher
 | In `.work` | Home in CWR |
 | --- | --- |
 | `clearances` — the interpolation licence and its terms | none |
+| `derivation.disposition` — cleared, refused, de minimis, never asked | none |
+| `disputes` — a claim made against the work | none |
 | `mandates` — who has authorised what licensing | none |
 | `clearability` — coverage in bps and the named gaps | none |
-| `content` — melody, harmony, lyrics, score digests | none |
+| `content` — melody, harmony, bassline, lyrics, score, fingerprints | none |
 | `signatures`, `timestamps`, `provenance_log` | none |
 | the version chain and per-component priority | none |
 
@@ -303,6 +324,44 @@ There is no third option, and the clearance itself has nowhere to go at all. Ten
 CWR cannot distinguish *derived from* from *is a version of*, and cannot record what the derivation cost.
 
 That asymmetry is the entire argument for the format existing.
+
+---
+
+## The claim that arrives after release
+
+The interpolation case above is the easy version, because it ends in a clearance. The common version does not.
+
+A record comes out. Listeners notice that a bass figure or a chord loop resembles something from decades earlier. An estate or a publisher sends a letter. By then the master is distributed, the artist has toured it, and the cost of being wrong is a share of everything the record will ever earn. The 1970s and 1980s catalogue is where this happens most, because the material is familiar enough for the resemblance to be audible to the public and old enough that the writers are dead and their rights sit with estates and administrators who are hard to find and under a duty to pursue.
+
+This is worth being precise about, because it is the use case the format is most likely to be asked to justify itself against, and the honest answer is narrower than the obvious one.
+
+### What the format does
+
+**It makes the question cheap to ask before release.** `derivation` plus `attestations` is already this machine: a similarity model asserts `work_derives_from_work` against a reference, with a named producer, a version and a confidence; a writer confirms it or doesn't; and the posture is recorded either way. The [contested-interpolation fixture](conformance/valid/contested-interpolation.work) is exactly this sequence, flagged at `0.76` seven months before a letter arrives.
+
+**It records the posture rather than erasing it.** A model flag that a writer disagrees with is not deleted. It sits in the document as a dated attestation with the writer's disagreement as a second attestation beneath it, and the derivation carries `independent_creation_asserted`. That is a far better position to be in than having no record, and a far more honest one than a `cleared: false` that cannot say which of four things it means.
+
+**It names what is in dispute.** `affected_components` and `disputed_components` point at `content.bassline` and `content.harmony` rather than at the work as a whole. A claim against a four-bar bass figure is not a claim against the song, and the difference is most of the argument.
+
+**It is the strongest defensive artefact available.** This is the half usually missed. Per-component digests mean an unchanged component keeps a byte-identical hash across versions, so a timestamped melody from before the defendant could plausibly have heard anything is cryptographic evidence of what existed when. In a dispute about a short phrase, that is worth more than any of the detection machinery.
+
+**It answers *who do I even call*.** Most interpolations go uncleared because clearing them is expensive, not because anyone intended to take anything. Three writers across two estates, an administrator and a sub-publisher is a transaction-cost problem. `mandates` and `clearability` turn it into a computation with the gaps named by party.
+
+### What the format does not do
+
+**It cannot decide substantial similarity.** [SPEC §1.2](SPEC.md#12-non-goals) says the document records who asserted what and does not adjudicate, and that is not modesty. The legal boundary of a musical work is deliberately undefined and is decided by a jury. A confidence of `0.76` from a cover-identification model is a reason to make a phone call. It is not a finding, and a format that implied otherwise would be actively dangerous to the person holding it.
+
+**It cannot detect anything without something to compare against.** This is the sharpest unresolved tension in the whole design. Detection needs a corpus; design constraint 1 says the artefact must be useful to one writer with one song; design constraint 3 says the canonical copy stays with the rightsholder. Nobody will hand over a catalogue, and every attempt to build the central index has failed for that reason.
+
+The partial answer is the `fingerprint` content role. A one-way perceptual encoding of a melody or a bassline discloses nothing and can be published; the works stay where they are and the comparison happens between fingerprints. That makes matching federated rather than central, which is the only version of it compatible with the constraints above. It is a field in `1.0` and not yet a capability: the format says where a fingerprint lives and what it must not leak, and says nothing about how two of them are compared. Until at least one scheme is named and implemented, this is a direction rather than a feature.
+
+**Most of the time nobody checked, because nobody was obliged to.** The claim lands against a released master. Unless a label, a distributor or a DSP asks for a work package at delivery, no document is produced and nothing is compared. That is an adoption problem and it is not solvable by specification — which is design constraint 1 again, from the other side.
+
+### So the honest claim
+
+Not *this would have caught it*. The format would have made it **cheap to have asked, and expensive to pretend you didn't** — a dated, attributable, signed record of what was flagged, by what, at what confidence, who disagreed, and whether anyone picked up the phone. That is a smaller claim than detection and a more defensible one, and it is the claim the format should be sold on.
+
+Which also explains why an open dispute is a *valid* document, and why a `disposition` of `not_sought` is not a validation error. A format that could only be conformant by omitting the inconvenient fact would simply be a format in which everybody omits it.
 
 ---
 
@@ -471,6 +530,7 @@ Deliberately narrow. Publishing only.
 - Agreements and chain of title
 - CWR generation, delivery and `ACK` reconciliation
 - Rights clearance — samples, interpolations, derivatives, medleys
+- Claims made against a work, recorded and not adjudicated
 - Programmatic licensing against known mandates
 - Royalty accounting and settlement
 - Rendering works into recordings, gated by writer consent
@@ -690,6 +750,12 @@ The earlier draft of this schema had real defects. They are listed here because 
 **14 — No merge strategy for parties without an IPI.** A nullable unique IPI permits unlimited duplicates of unregistered writers. Needs a `canonical_party_id` and an explicit merge path — because most new writers do not have an IPI yet, and onboarding them is the actual product.
 
 **15 — Writer names were a single string.** Found while mapping the model onto CWR, which has separate Last Name and First Name fields for natural persons. Storing `"McCalla, Mali"` and splitting on the comma breaks on mononyms, on suffixes, and on every name where the family name isn't positionally obvious — which is most of the world. Natural persons need structured `last_name` / `first_name`; legal entities keep a single name field.
+
+**16 — Derivation clearance was a boolean.** `cleared: true | false`. The `true` branch is fine. The `false` branch silently merges *we asked and they refused*, *we judged it de minimis*, *we think the resemblance is coincidental* and *we never asked anyone* — four postures with four different consequences, and the one thing a reader most needs to know. A boolean here is not a simplification, it is the deletion of the answer. Replaced by a `disposition` enum ([SPEC §7.8](SPEC.md#78-derivation-dispositions)).
+
+**17 — There was nowhere to record a claim made *against* the work.** Design constraint 4 says conflicts are data rather than errors, and the only conflict with a home was a society's `CO` acknowledgement on a registration. An infringement allegation — the conflict that actually costs money, and the one most likely to be contested years later — had no representation at all. The format could describe a work that had been cleared and a work that had not, and not a work somebody was suing over. Fixed by `disputes[]` ([SPEC §6.21](SPEC.md#621-dispute-object)), which records the claim and refuses to adjudicate it.
+
+**18 — The content vocabulary could not name a bassline.** `melody`, `harmony`, `lyrics`, `score`, `structure`, closed. The material most often alleged to have been copied is a bass figure over a repeating chord loop, and a format whose content tier cannot address the thing in dispute cannot be used as evidence about it. Opened, with `bassline` and `rhythm` added and a `subrole` discriminator ([SPEC §7.7](SPEC.md#77-content-roles)).
 
 ---
 

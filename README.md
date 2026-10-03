@@ -16,6 +16,8 @@ A `.work` file is a signed, content-addressed, versioned JSON document describin
 | **[RATIONALE.md](RATIONALE.md)** | Why the format exists and why it is shaped this way. Non-normative, and the part worth reading first. |
 | **[example.work](example.work)** | A complete, valid document exercising every awkward case. |
 | **[conformance/](conformance/)** | Fixtures a validator must pass — valid documents, invalid ones, and the rules each violates. |
+| **[mappings/](mappings/)** | Crosswalks into CWR, Apache Sourcelume and, in time, the DDEX works stack. |
+| **[context/](context/v1/work.jsonld)** | An optional JSON-LD context. Add one member and the document is a graph. |
 
 ---
 
@@ -30,9 +32,11 @@ A `.work` file is a signed, content-addressed, versioned JSON document describin
   "parent": "sha256:bb17c0f4…",
   "status": "attested",
 
-  "identity": { "iswc": "T-034.524.680-1", "title": "Salt Water" },
-  "content":  [ { "role": "melody", "digest": "sha256:9f2a4c7e…" } ],
-  "rights":   { "parties": [], "credits": [], "agreements": [] },
+  "identity":   { "iswc": "T-034.524.680-1", "title": "Salt Water" },
+  "content":    [ { "role": "melody", "digest": "sha256:9f2a4c7e…" } ],
+  "rights":     { "parties": [], "credits": [], "agreements": [] },
+  "derivation": [ { "parent_title": "Harbour Lights", "disposition": "cleared" } ],
+  "disputes":   [],
   "signatures": [ { "algorithm": "ed25519" } ]
 }
 ```
@@ -59,12 +63,15 @@ Learned from every previous attempt at this problem, all of which failed — [in
 
 `1.0.0-draft`. The object model, canonicalisation rules and validation rules are drafted, and [example.work](example.work) is a complete conforming document. Unresolved questions are tracked in [SPEC Appendix A](SPEC.md#appendix-a--open-questions).
 
+Validation rules are tiered by what is needed to decide them — **L1** structural, **L2** referential, **L3** external — and an L1 validator is conformant ([SPEC §8.1](SPEC.md#81-levels)). Checking a file should be cheap; only signatures and blob retrieval should cost anything.
+
 Roadmap:
 
 1. Publish the JSON Schema at its `$schema` URL
 2. Release the reference validator
-3. Complete the conformance corpus — 3 of 23 fixtures written
+3. Complete the conformance corpus — 5 of 32 fixtures written
 4. CWR `NWR` projection
+5. Name a fingerprint scheme, so federated similarity matching is a capability and not just a field
 
 ---
 
@@ -75,7 +82,7 @@ Tooling is developed and versioned separately from the specification. None of it
 | | |
 | --- | --- |
 | **Reference validator** | Checks a document against [SPEC §8](SPEC.md#8-validation-rules) and the [conformance corpus](conformance/). In development. |
-| **Projections** | `.work` → CWR, DDEX `MWL` / `MWN`, lead sheet. Planned. |
+| **Projections** | `.work` → CWR, DDEX `MWL` / `MWN`, lead sheet. [Crosswalks drafted](mappings/); code planned. |
 | **[invoke-works](https://github.com/malimccalla/invoke-works)** | Publishing administration platform built on the format. In development. |
 
 ---

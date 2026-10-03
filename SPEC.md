@@ -1,6 +1,6 @@
 # The `.work` Format
 
-**Version 1.0.0-draft · Status: draft · 2026-09-05**
+**Version 1.0.0-draft · Status: draft · 2026-10-03**
 
 A `.work` file is a signed, content-addressed, versioned JSON document describing a musical work: its identity, the musical content that anchors it, the rights graph that makes it commercial, and the provenance of every assertion in it.
 
@@ -30,6 +30,8 @@ It also does not define the *truth* of any claim in the document. A `.work` file
 ### 1.3 Relationship to existing standards
 
 `.work` is designed to project losslessly *into* existing formats and to reuse their controlled vocabularies rather than invent new ones. It is not a replacement for CWR, DDEX or ISWC. See [§7](#7-controlled-vocabularies).
+
+An OPTIONAL JSON-LD context ([§5.7](#57-json-ld)) maps the object model onto schema.org, PROV-O and ODRL, so that a document can be consumed as a graph by adjacent provenance infrastructure. It is a compatibility layer: the format is JSON, and remains readable by any JSON library.
 
 ---
 
@@ -71,7 +73,7 @@ manifest.work                    the work package document
 blobs/sha256/<full-hex-digest>   one file per referenced blob
 ```
 
-A `.workpkg` MUST contain a blob for every `digest` appearing in `content`, `evidence` and `renders`. It MAY contain blobs for digests appearing in `agreements`, `clearances` and `provenance_log`.
+A `.workpkg` MUST contain a blob for every `digest` appearing in `content`, `evidence` and `renders`. It MAY contain blobs for digests appearing in `agreements`, `clearances`, `disputes` and `provenance_log`.
 
 `.work` is the pointer; `.workpkg` is the payload. Producers SHOULD default to `.work`.
 
@@ -89,7 +91,8 @@ A `.workpkg` MUST contain a blob for every `digest` appearing in `content`, `evi
 | `version` | integer | ✓ | Monotonically increasing state counter, starting at `1`. |
 | `parent` | string (digest) \| null | ✓ | Digest of the immediately preceding version. `null` if and only if `version` is `1`. |
 | `created_at` | string (date-time) | ✓ | RFC 3339 UTC instant at which this version was created. |
-| `status` | string | ✓ | `draft` \| `attested` \| `superseded` \| `withdrawn`. |
+| `status` | string | ✓ | `draft` \| `attested` \| `withdrawn`. Supersession is **not** a status — see [§4.2](#42-version-chain). |
+| `@context` | string (IRI) \| array | | OPTIONAL JSON-LD context. See [§5.7](#57-json-ld). |
 | `ext` | object | | Extension namespaces. See [§6.20](#620-extension-object). |
 
 `work_id` identifies the work. It MUST NOT change between versions. It is **not** the CWR Submitter Work Number — see `identity.submitter_work_number` and [WORK-013](#8-validation-rules).
@@ -99,6 +102,8 @@ A `.workpkg` MUST contain a blob for every `digest` appearing in `content`, `evi
 Work packages are append-only. A producer MUST NOT mutate a published version; it MUST emit a new document with `version` incremented and `parent` set to the digest of the version it supersedes.
 
 A consumer given two documents with the same `work_id` MUST treat the one with the higher `version` as current, and MUST NOT discard the earlier one if it is relied upon as evidence of prior state.
+
+**Supersession is a property of the chain, not of a document.** A version is superseded when, and only when, a document exists whose `parent` is its digest. `status` therefore has no `superseded` member: a document could only declare itself superseded by being mutated after publication, which this section forbids.
 
 ### 4.3 Component-level continuity
 
@@ -164,6 +169,18 @@ A `timestamps` entry records a token binding the document to a point in time. It
 
 The `qualified` field asserts whether the authority is a qualified trust service provider under eIDAS. A producer MUST NOT set `qualified` to `true` unless the authority appears on an EU member state Trusted List. See [§10](#10-security-considerations).
 
+### 5.7 JSON-LD
+
+A document MAY carry an `@context` member. A context is published at `context/v1/work.jsonld` mapping every field name in [§6](#6-object-model) to an IRI, so that adding that one member — and changing nothing else — makes an otherwise unmodified document valid JSON-LD 1.1.
+
+The context is a **compatibility layer, not a second object model.** This specification does not define `.work` in terms of RDF, no field is named for the convenience of a triplestore, and no conformance class requires an RDF toolchain.
+
+**Signing is unaffected, and this is the part that must not be got wrong.** The signing input remains the canonical form of the JSON document under JCS ([§5.4](#54-the-signing-input)), including `@context` where present. Implementations MUST NOT use RDF Dataset Canonicalization to produce or verify a `.work` signature.
+
+Consumers MUST NOT expand, compact, flatten or frame a document before verifying its signatures. JSON-LD processing is meaning-preserving and byte-destructive: a document round-tripped through a JSON-LD processor will generally fail [WORK-060](#8-validation-rules) while remaining semantically identical. Verify first, then process.
+
+Producers SHOULD reference the context by IRI rather than inlining it, so that editing the context does not alter the signed bytes of every document that uses it.
+
 ---
 
 ## 6. Object model
@@ -175,8 +192,8 @@ The `qualified` field asserts whether the authority is a qualified trust service
 | Field | Type | R | Description |
 | --- | --- | --- | --- |
 | `iswc` | string \| null | ✓ | ISO 15707, formatted `T-nnn.nnn.nnn-c`. MUST pass the check digit test ([WORK-011](#8-validation-rules)). |
-| `submitter_work_number` | string | ✓ | Submitter-scoped key. MUST be 1–14 characters. Maps to the CWR Submitter Work # field. |
-| `title` | string | ✓ | 1–60 characters for CWR projection. |
+| `submitter_work_number` | string | ✓ | Submitter-scoped key, non-empty. Maps to the CWR Submitter Work # field, which bounds it at 14 characters ([CWR-002](#82-cwr-projection-profile)). |
+| `title` | string | ✓ | Non-empty. CWR bounds it at 60 characters ([CWR-001](#82-cwr-projection-profile)). |
 | `alternative_titles` | array | ✓ | See [§6.2](#62-alternative-title-object). MAY be empty. |
 | `language` | string \| null | ✓ | ISO 639-2/T three-letter code. |
 | `duration_ms` | integer \| null | ✓ | REQUIRED (non-null) when `distribution_category` is `SER`. |
@@ -218,21 +235,28 @@ The `qualified` field asserts whether the authority is a qualified trust service
 
 | Field | Type | R | Description |
 | --- | --- | --- | --- |
-| `role` | string | ✓ | `melody` \| `harmony` \| `lyrics` \| `score` \| `structure`. MUST be unique within the array. |
+| `role` | string | ✓ | See [§7.7](#77-content-roles). |
+| `subrole` | string \| null | ✓ | Discriminator where one role carries more than one component. The pair (`role`, `subrole`) MUST be unique within the array. |
 | `media_type` | string | ✓ | |
 | `digest` | string | ✓ | See [§5.2](#52-digest-form). |
 | `size` | integer | ✓ | Bytes. |
 | `derived` | boolean | ✓ | `true` if machine-produced. |
 | `attested_by` | string \| null | | `party_id` of a party who has confirmed the component. |
+| `computed_over` | string \| null | ✓ | REQUIRED (non-null) when `role` is `fingerprint`: the `role` or `role.subrole` of the component it was computed from. MUST resolve. |
+| `algorithm` | string \| null | ✓ | REQUIRED (non-null) when `role` is `fingerprint`. Named and versioned, e.g. `invoke:fp/melodic-ngram@1.0`. |
 | `locators` | array of string (URI) | ✓ | Advisory. MAY be empty. |
 
-Components are addressed by `role`, which is unique within the array. `content.melody` is a stable reference; an array index is not.
+Components are addressed by `role`, or by `role.subrole` where a subrole is present. `content.melody` and `content.fingerprint.melodic` are stable references; an array index is not.
+
+**`fingerprint` is the only role intended to be published.** Every other component discloses the work. A fingerprint is a one-way perceptual encoding — a melodic n-gram hash, an embedding — from which the component it was computed over cannot be reconstructed, and a producer MUST NOT emit one from which it can.
+
+It exists for a specific reason. Detecting that two works share material requires comparing them, which has always required somebody to hold both. No rightsholder will surrender a catalogue to a central index, and every attempt to build one has failed. Publishable fingerprints make the comparison federated: parties publish fingerprints, keep the works, and compute similarity against each other without any of them holding the other's repertoire. This specification defines the field, not the matching — `algorithm` names the scheme, and interoperability between schemes is out of scope for `1.0`.
 
 ### 6.5 Evidence Object
 
 `evidence` — recordings and documents evidencing that the work exists. A sound recording appears here only as evidence, never as a primary entity.
 
-Fields as [§6.4](#64-content-component-object), except `role` need not be unique, plus:
+Fields as [§6.4](#64-content-component-object), except that the (`role`, `subrole`) pair need not be unique and `computed_over` and `algorithm` do not apply, plus:
 
 | Field | Type | R | Description |
 | --- | --- | --- | --- |
@@ -258,9 +282,11 @@ Fields as [§6.4](#64-content-component-object), except `role` need not be uniqu
 | `melody_similarity` | number \| null | | Round-trip check against `content.melody`. |
 | `human_in_loop` | boolean | ✓ | Bears on whether the master is protectable. |
 | `copyright_note` | string \| null | | |
-| `consent_coverage_bps` | integer | ✓ | Ownership bps whose holders have mandated this `use_class`. |
+| `consent_coverage_bps` | object | ✓ | Keys `pr`, `mr`, `sr`. Ownership bps in each right whose holders have mandated this `use_class`. |
 | `consent_note` | string \| null | | |
-| `distribution_restriction` | string \| null | ✓ | `null` when `consent_coverage_bps` is `10000`. |
+| `distribution_restriction` | string \| null | ✓ | `null` only when every `consent_coverage_bps` value is `10000`. |
+
+Consent is measured per right because mandates are granted per right ([§6.14](#614-mandate-object)) and every other share in this document is split per right. A single scalar would be the one place the format contradicted itself, and it would do so at the point where the question is whether a party consented.
 
 ### The `rights` container
 
@@ -268,9 +294,11 @@ Fields as [§6.4](#64-content-component-object), except `role` need not be uniqu
 
 | Field | Type | R | Description |
 | --- | --- | --- | --- |
-| `totals_bps` | object | ✓ | `ownership` (keys `pr`, `mr`, `sr`) and `valid` (boolean). |
+| `totals_bps` | object | ✓ | `ownership`, with keys `pr`, `mr`, `sr`. |
 
-`totals_bps` is a **declared** summary, not an authority. A consumer MUST recompute it from `credits` and MUST NOT rely on `valid` ([WORK-032](#8-validation-rules)). It exists so that a producer's own belief about the total is visible and can be contradicted.
+`totals_bps` is a **declared** summary, not an authority. A consumer MUST recompute it from `credits` ([WORK-032](#8-validation-rules)), and a mismatch between the declared and the computed total is itself a violation ([WORK-043](#8-validation-rules)). It exists so that a producer's own belief about the total is visible and can be contradicted — which is only useful for as long as it stays a belief.
+
+An earlier draft carried a sibling `valid` boolean. It has been removed. A self-declared verdict on a document's own correctness is not evidence of anything, and a consumer that reads it has stopped validating. The document asserts; adjudication belongs to the reader.
 
 ### 6.7 Party Object
 
@@ -373,10 +401,19 @@ Retention and post-term collection are distinct from `end_date`. Royalties are c
 | `parent_work_id` | string \| null | ✓ | |
 | `parent_iswc` | string \| null | ✓ | |
 | `parent_title` | string | ✓ | |
+| `parent_locators` | array of string (URI) | ✓ | Where the parent's own `.work` document may be retrieved. Advisory. MAY be empty. |
+| `affected_components` | array of string | ✓ | `role` or `role.subrole` references into `content`, naming what is said to derive. MUST resolve. MAY be empty. |
 | `description` | string \| null | | |
 | `attestations` | array | ✓ | See [§6.16](#616-attestation-object). |
-| `cleared` | boolean | ✓ | |
-| `clearance_id` | string \| null | ✓ | MUST be non-null when `cleared` is `true`. |
+| `disposition` | string | ✓ | See [§7.8](#78-derivation-dispositions). |
+| `clearance_id` | string \| null | ✓ | MUST be non-null when `disposition` is `cleared`, and `null` otherwise. |
+| `dispute_id` | string \| null | ✓ | MUST be non-null when `disposition` is `disputed`. MUST resolve to a [§6.21](#621-dispute-object) entry. |
+
+**A parent is referenced, never embedded.** The parent's own rights graph, content and provenance are not copied in; a consumer tracing further back resolves `parent_locators` to a separately signed document. Embedding would leave it unclear whose signature covered the embedded claims, and would freeze a copy that can never receive the parent's later corrections.
+
+**`disposition` replaces a `cleared` boolean, and the reason is the whole point of the field.** A boolean collapses *"we licensed it"*, *"they refused and we released anyway"*, *"we judged it de minimis"* and *"we never asked"* into a single `false`. Those are four different legal postures with four different consequences, and which one applies is the most consequential thing this document records about a derivation. A format that cannot tell them apart is of no use as evidence to either side of a dispute.
+
+`affected_components` exists so that a derivation claim names *what* is said to derive. A claim against a two-bar melodic phrase and a claim against an entire lyric are not the same claim, and a document that records only *that* a work derives, without recording *which component*, cannot be reasoned about.
 
 ### 6.13 Clearance Object
 
@@ -394,9 +431,11 @@ Retention and post-term collection are distinct from `end_date`. Royalties are c
 | `affects_ownership` | boolean | ✓ | |
 | `document_digest` | string \| null | ✓ | |
 
-`consideration` carries `type`, `basis`, `bps`, `territory` and `term`.
+`consideration` carries `type`, `basis`, `bps`, `beneficiary_party_id`, `territory` and `term`. `beneficiary_party_id` is the `party_id` of the party to whom the consideration is owed where that party is declared in `rights.parties`, and `null` where it is not.
 
 **A clearance whose `affects_ownership` is `false` MUST NOT be reflected in `ownership_bps`.** A participation in receipts is not an assignment of copyright; conflating them corrupts the split. This distinction has no representation in CWR at all.
+
+[WORK-051](#8-validation-rules) enforces the checkable half of that: a non-ownership beneficiary declared in `rights.parties` MUST NOT also hold a credit. It cannot catch a beneficiary who was never declared, and a validator MUST NOT report the absence of a violation here as confirmation that the split is clean.
 
 ### 6.14 Mandate Object
 
@@ -418,6 +457,8 @@ Retention and post-term collection are distinct from `end_date`. Royalties are c
 
 `ai_training` and `ai_rendering` are **distinct use classes**. Training a model on a work is not the same act as synthesising a performance of it, and a party may permit one and refuse the other. An implementation MUST NOT treat consent to one as consent to the other.
 
+> A mandate is a policy — permissions, prohibitions, territorial and temporal constraints, and a price floor — and [ODRL](https://www.w3.org/TR/odrl-model/) is a W3C Recommendation for exactly that shape. The JSON-LD context ([§5.7](#57-json-ld)) maps this object onto ODRL where the correspondence is exact. Adopting ODRL as the normative model is deferred: its vocabulary has no term for a right split by `pr`/`mr`/`sr`, and nothing in it is cheaper to implement than the table above.
+
 ### 6.15 Clearability Object
 
 `clearability` — a computed summary, valid as at `computed_at`. Consumers MUST NOT treat it as authoritative if the document has changed since.
@@ -425,9 +466,12 @@ Retention and post-term collection are distinct from `end_date`. Royalties are c
 | Field | Type | R | Description |
 | --- | --- | --- | --- |
 | `computed_at` | string (date-time) | ✓ | |
+| `request` | object | ✓ | The question being answered: `use_class`, `territories` (as [§6.14](#614-mandate-object)) and `term`. |
 | `one_stop` | boolean | ✓ | `true` only if coverage is `10000` in every right. |
 | `coverage_bps` | object | ✓ | Keys `pr`, `mr`, `sr`. |
 | `gaps` | array | ✓ | Objects with `party_id`, `bps`, `reason`. |
+
+A mandate is scoped by right, territory and use class ([§6.14](#614-mandate-object)), so a coverage figure computed without naming all three is an answer to a question nobody asked. `request` records the question. Two `clearability` objects with different `request` values are not comparable, and a consumer MUST NOT apply one to a different request.
 
 ### 6.16 Attestation Object
 
@@ -438,8 +482,16 @@ An attestation records who asserted a claim about a **relationship**, when, and 
 | `claim` | string | ✓ | `recording_embodies_work` \| `work_derives_from_work`. |
 | `attestor` | string | ✓ | A `party_id`, or a producer identifier such as `invoke:pipeline/cover-id@0.3.1`. |
 | `created` | string (date-time) | ✓ | |
-| `confidence` | number | — | `0.0`–`1.0`. **MUST be present when the attestor is a model. MUST be absent when the attestor is a party.** |
+| `confidence` | number | — | `0.0`–`1.0`. **MUST be present when the attestor is a producer. MUST be absent when the attestor is a party.** |
 | `note` | string \| null | | |
+
+**Telling the two apart is mechanical, not a matter of judgement.** A consumer MUST resolve `attestor` as follows, in order:
+
+1. If the value equals a `party_id` declared in `rights.parties`, the attestor is a **party**.
+2. Otherwise the value MUST match the producer identifier grammar `scheme ":" path "@" version`, where `scheme` contains no colon, `path` is non-empty, and `version` is non-empty — for example `invoke:pipeline/cover-id@0.3.1`. The attestor is a **producer**.
+3. A value matching neither is a violation ([WORK-027](#8-validation-rules)).
+
+A `party_id` SHOULD be a ULID ([§6.7](#67-party-object)) and a producer identifier MUST contain both a colon and an `@`, so the two cannot collide. An earlier draft left the discriminator to the reader, which made [WORK-024](#8-validation-rules) impossible to implement deterministically — two validators could disagree about whether the same document was conformant.
 
 The absence of `confidence` means a party asserted the claim. This is a different statement from a measurement of `1.0` and MUST NOT be normalised to one.
 
@@ -509,6 +561,32 @@ Namespaces MUST be reverse-DNS or DNS names controlled by the extending implemen
 
 `ext` is covered by signatures ([§5.4](#54-the-signing-input)).
 
+### 6.21 Dispute Object
+
+`disputes` — claims made **against** the work by someone else. Every other object in this document records what the producer asserts; this one records what is asserted about them.
+
+| Field | Type | R | Description |
+| --- | --- | --- | --- |
+| `dispute_id` | string | ✓ | Unique within the document. |
+| `claim` | string | ✓ | `work_derives_from_work` \| `ownership` \| `credit`. |
+| `raised_at` | string (date) | ✓ | |
+| `claimant` | object | ✓ | `name` (string), plus nullable `party_id` and `ipi_name_number`. |
+| `claimed_parent_title` | string \| null | ✓ | Non-null where `claim` is `work_derives_from_work`. |
+| `claimed_parent_iswc` | string \| null | ✓ | |
+| `disputed_components` | array of string | ✓ | `role` or `role.subrole` references into `content`, naming what is said to infringe. MUST resolve. MAY be empty. |
+| `forum` | string \| null | ✓ | Where it is being pursued — a named court, a society, or correspondence. `null` where unstated. |
+| `status` | string | ✓ | See [§7.9](#79-dispute-statuses). |
+| `response` | string \| null | ✓ | The document holder's position, in their own words. |
+| `resolved_at` | string (date) \| null | ✓ | |
+| `resolution` | string \| null | ✓ | REQUIRED (non-null) when `status` is terminal. |
+| `document_digests` | array of string | ✓ | Digests of pleadings, correspondence or settlement terms. MAY be empty. |
+
+Design constraint 4 holds that conflicts are data rather than errors, but before this object the only conflict with anywhere to live was a society's `CO` acknowledgement ([§6.17](#617-registration-object)). An infringement allegation — the conflict that actually costs money — had no representation at all, which meant the format could describe a work that had been cleared and a work that had not, but not a work that someone was suing over.
+
+A dispute is **recorded, not adjudicated.** The presence of an entry says that a claim was made and by whom; it says nothing about whether the claim is good. `status` tracks the claim's procedural state and `resolution` records the outcome in plain words. There is deliberately no field asserting that a dispute was meritless, and a consumer MUST NOT infer from a `withdrawn` or `settled` status that the underlying allegation was false.
+
+**A document carrying an open dispute is still a valid document.** Rejecting it would destroy the only record of the dispute, and a producer who can only emit a conformant file by omitting an inconvenient fact will omit it.
+
 ---
 
 ## 7. Controlled vocabularies
@@ -554,83 +632,147 @@ Every vocabulary below is drawn from an existing standard. Where a code is defin
 
 This list is extensible via a minor version. Implementations MUST reject an unrecognised use class rather than defaulting to permitted.
 
+### 7.7 Content roles
+
+`melody` `harmony` `bassline` `rhythm` `lyrics` `score` `structure` `fingerprint`
+
+The set is open to additions by minor version and closed to a producer. `bassline` and `rhythm` are present because the material most often alleged to be copied is a bassline over a chord loop, and a vocabulary that could not name it could not describe the claim.
+
+### 7.8 Derivation dispositions
+
+| Code | Meaning |
+| --- | --- |
+| `cleared` | A licence was sought and granted. REQUIRES `clearance_id`. |
+| `clearance_sought` | Requested, not yet answered. |
+| `clearance_refused` | Requested and refused. The work is exploited, or not, at the holder's risk. |
+| `de_minimis_asserted` | The holder's position is that the taking is too slight to require a licence. |
+| `independent_creation_asserted` | The holder's position is that the similarity is coincidental. |
+| `not_sought` | The similarity is acknowledged and no licence was requested. |
+| `disputed` | A third party has made a claim. REQUIRES `dispute_id`. |
+
+The last four are not failures of the format. They are real and common postures, and recording which one applies — with a date, an attestor and a signature — is more use than a boolean that calls all of them `false`.
+
+### 7.9 Dispute statuses
+
+`raised` `contested` `withdrawn` `settled` `adjudicated`
+
+`withdrawn`, `settled` and `adjudicated` are **terminal** and REQUIRE a non-null `resolution`.
+
 ---
 
 ## 8. Validation rules
 
-Each rule has a stable identifier. Conformance fixtures in [conformance/](conformance/) reference these identifiers. A validator MUST report the identifier of every rule violated.
+Each rule has a stable identifier and a level. Conformance fixtures in [conformance/](conformance/) reference these identifiers, and a validator MUST report the identifier of every rule violated.
+
+### 8.1 Levels
+
+A rule's level is the **lowest** at which it can be decided.
+
+| Level | Decidable from | Example |
+| --- | --- | --- |
+| **L1** structural | the document's own bytes, a field at a time | a date format, an enum member, a share bound |
+| **L2** referential | the document as a whole — references resolved, aggregates recomputed | a `party_id` that resolves, ownership totalling `10000` |
+| **L3** external | the document **plus data outside it** | a signature, a blob's contents, the TIS hierarchy, an EU Trusted List |
+
+This tiering exists because an earlier draft required every validator to implement every rule, while several rules cannot be decided from the document at all. `WORK-063` checks against a provenance log that is an external blob behind a digest; `WORK-060` needs a resolvable public key; `WORK-062` needs a Trusted List. A conformance class nobody can satisfy is not a conformance class. See [§9.3](#93-conformant-validator).
 
 **Structure**
 
-| ID | Rule |
-| --- | --- |
-| `WORK-001` | The document MUST be strict, well-formed JSON, UTF-8, no BOM. |
-| `WORK-002` | `spec_version` MUST be present and its major version supported. |
-| `WORK-003` | `work_id` MUST be a valid 26-character ULID. |
-| `WORK-004` | `parent` MUST be `null` if and only if `version` is `1`. |
-| `WORK-005` | `version` MUST be a positive integer. |
-| `WORK-006` | Every `ext` key MUST be a DNS or reverse-DNS name. |
+| ID | L | Rule |
+| --- | --- | --- |
+| `WORK-001` | 1 | The document MUST be strict, well-formed JSON, UTF-8, no BOM. |
+| `WORK-002` | 1 | `spec_version` MUST be present and its major version supported. |
+| `WORK-003` | 1 | `work_id` MUST be a valid 26-character ULID. |
+| `WORK-004` | 1 | `parent` MUST be `null` if and only if `version` is `1`. |
+| `WORK-005` | 1 | `version` MUST be a positive integer. |
+| `WORK-006` | 1 | Every `ext` key MUST be a DNS or reverse-DNS name. |
+| `WORK-007` | 1 | `status` MUST be `draft`, `attested` or `withdrawn`. `superseded` is not a status ([§4.2](#42-version-chain)). |
+| `WORK-008` | 1 | `@context`, where present, MUST be a string IRI or an array of string IRIs and objects. |
 
 **Identity**
 
-| ID | Rule |
-| --- | --- |
-| `WORK-010` | `identity.title` MUST be 1–60 characters. |
-| `WORK-011` | `identity.iswc`, when non-null, MUST match `T-nnn.nnn.nnn-c` and satisfy the ISO 15707 check digit. |
-| `WORK-012` | `music_arrangement` and `lyric_adaptation` MUST be non-null when `version_type` is `MOD`, and `null` otherwise. |
-| `WORK-013` | `submitter_work_number` MUST be 1–14 characters. |
-| `WORK-014` | `duration_ms` MUST be non-null when `distribution_category` is `SER`. |
-| `WORK-015` | Every `cwr_title_type` MUST be a member of [§7.4](#74-title-types). |
+| ID | L | Rule |
+| --- | --- | --- |
+| `WORK-010` | 1 | `identity.title` MUST be a non-empty string. |
+| `WORK-011` | 1 | `identity.iswc`, when non-null, MUST match `T-nnn.nnn.nnn-c` and satisfy the ISO 15707 check digit. |
+| `WORK-012` | 1 | `music_arrangement` and `lyric_adaptation` MUST be non-null when `version_type` is `MOD`, and `null` otherwise. |
+| `WORK-013` | 1 | `submitter_work_number` MUST be a non-empty string. |
+| `WORK-014` | 1 | `duration_ms` MUST be non-null when `distribution_category` is `SER`. |
+| `WORK-015` | 1 | Every `cwr_title_type` MUST be a member of [§7.4](#74-title-types). |
 
 **Content and evidence**
 
-| ID | Rule |
-| --- | --- |
-| `WORK-020` | `role` MUST be unique within `content`. |
-| `WORK-021` | Every `digest` MUST match `<algorithm>:<lowercase-hex>` with a supported algorithm and correct length. |
-| `WORK-022` | `size` MUST be a non-negative integer. |
-| `WORK-023` | `confidence`, where present, MUST be within `0.0`–`1.0` inclusive. |
-| `WORK-024` | An attestation MUST include `confidence` when its attestor is a model, and MUST omit it when its attestor is a `party_id`. |
-| `WORK-025` | `attestations` MUST be ordered by `created`, ascending. |
-| `WORK-026` | Every `isrc`, where non-null, MUST be 12 alphanumeric characters. |
+| ID | L | Rule |
+| --- | --- | --- |
+| `WORK-020` | 1 | The pair (`role`, `subrole`) MUST be unique within `content`. |
+| `WORK-021` | 1 | Every `digest` MUST match `<algorithm>:<lowercase-hex>` with a supported algorithm and correct length. |
+| `WORK-022` | 1 | `size` MUST be a non-negative integer. |
+| `WORK-023` | 1 | `confidence`, where present, MUST be within `0.0`–`1.0` inclusive. |
+| `WORK-024` | 2 | An attestation MUST include `confidence` when its attestor is a producer, and MUST omit it when its attestor is a `party_id`. |
+| `WORK-025` | 1 | `attestations` MUST be ordered by `created`, ascending. |
+| `WORK-026` | 1 | Every `isrc`, where non-null, MUST be 12 alphanumeric characters. |
+| `WORK-027` | 2 | Every `attestor` MUST either equal a declared `party_id` or match the producer identifier grammar in [§6.16](#616-attestation-object). |
+| `WORK-028` | 2 | A component whose `role` is `fingerprint` MUST carry non-null `computed_over` and `algorithm`, and `computed_over` MUST resolve to another component. |
+| `WORK-029` | 1 | Every `content` `role` MUST be a member of [§7.7](#77-content-roles). |
 
 **Rights**
 
-| ID | Rule |
-| --- | --- |
-| `WORK-030` | Every `party_id`, `credit_id`, `agreement_id`, `mandate_id`, `clearance_id` and `render_id` MUST be unique within the document. |
-| `WORK-031` | Every reference to an identifier MUST resolve to an object declared in the same document. |
-| `WORK-032` | `ownership_bps` MUST total exactly `10000` for each of `pr`, `mr` and `sr`, taken independently across all credits. |
-| `WORK-033` | Every share value MUST be an integer in `0`–`10000`. No share or monetary value may be a JSON number with a fractional part. |
-| `WORK-034` | A credit MUST carry `writer_designation` xor `publisher_type`, matching its `cwr_record`. |
-| `WORK-035` | `cwr_record` MUST agree with `controlled`: `SWR`/`SPU` when `true`, `OWR`/`OPU` when `false`. |
-| `WORK-036` | Every credit with `cwr_record` of `SWR` MUST appear as a `writer_credit_id` in `publisher_for_writer`. |
-| `WORK-037` | A `territory_claim` with `indicator` of `E` MUST have all `collection_bps` set to `0`. |
-| `WORK-038` | A credit with `controlled` of `true` MUST have a non-null `agreement_id`. |
-| `WORK-039` | Publisher credits MUST have a `publisher_sequence` of `1` or greater, unique within their chain. |
-| `WORK-040` | `effective_to`, where non-null, MUST NOT precede `effective_from`. |
-| `WORK-041` | `retention_end_date` MUST NOT precede `end_date`; `post_term_collection_end_date` MUST NOT precede `retention_end_date`. |
-| `WORK-042` | For every TIS territory referenced, collection shares MUST total `10000` per right across all parties collecting there. |
+| ID | L | Rule |
+| --- | --- | --- |
+| `WORK-030` | 1 | Every `party_id`, `credit_id`, `agreement_id`, `mandate_id`, `clearance_id`, `render_id` and `dispute_id` MUST be unique within the document. |
+| `WORK-031` | 2 | Every reference to an identifier MUST resolve to an object declared in the same document. |
+| `WORK-032` | 2 | `ownership_bps` MUST total exactly `10000` for each of `pr`, `mr` and `sr`, taken independently across all credits. |
+| `WORK-033` | 1 | Every share value MUST be an integer in `0`–`10000`. No share or monetary value may be a JSON number with a fractional part. |
+| `WORK-034` | 1 | A credit MUST carry `writer_designation` xor `publisher_type`, matching its `cwr_record`. |
+| `WORK-035` | 1 | `cwr_record` MUST agree with `controlled`: `SWR`/`SPU` when `true`, `OWR`/`OPU` when `false`. |
+| `WORK-036` | 2 | Every credit with `cwr_record` of `SWR` MUST appear as a `writer_credit_id` in `publisher_for_writer`. |
+| `WORK-037` | 1 | A `territory_claim` with `indicator` of `E` MUST have all `collection_bps` set to `0`. |
+| `WORK-038` | 1 | A credit with `controlled` of `true` MUST have a non-null `agreement_id`. |
+| `WORK-039` | 2 | Publisher credits MUST have a `publisher_sequence` of `1` or greater, unique within their chain. |
+| `WORK-040` | 1 | `effective_to`, where non-null, MUST NOT precede `effective_from`. |
+| `WORK-041` | 1 | `retention_end_date` MUST NOT precede `end_date`; `post_term_collection_end_date` MUST NOT precede `retention_end_date`. |
+| `WORK-042` | 3 | For every TIS territory referenced, collection shares MUST total `10000` per right across all controlled parties collecting there, after resolving the TIS hierarchy and all include/exclude claims. |
+| `WORK-043` | 2 | `rights.totals_bps.ownership` MUST equal the total recomputed from `credits`, per right. |
 
-**Derivation, clearance and consent**
+**Derivation, clearance, consent and dispute**
 
-| ID | Rule |
-| --- | --- |
-| `WORK-050` | `clearance_id` MUST be non-null when `cleared` is `true`. |
-| `WORK-051` | A clearance with `affects_ownership` of `false` MUST NOT be represented in any `ownership_bps`. |
-| `WORK-052` | A render's `use_class` MUST appear in the `use_classes` of its referenced mandate. |
-| `WORK-053` | A render's `use_class` MUST NOT appear in that mandate's `exclusions`. |
-| `WORK-054` | `distribution_restriction` MUST be non-null when `consent_coverage_bps` is less than `10000`. |
-| `WORK-055` | `clearability.one_stop` MUST be `true` only when every `coverage_bps` value is `10000`. |
+| ID | L | Rule |
+| --- | --- | --- |
+| `WORK-050` | 1 | `clearance_id` MUST be non-null when `disposition` is `cleared`, and `null` otherwise. |
+| `WORK-051` | 2 | Where a clearance has `affects_ownership` of `false`, its `consideration.beneficiary_party_id`, when non-null, MUST NOT hold a credit in `rights.credits`. |
+| `WORK-052` | 2 | A render's `use_class` MUST appear in the `use_classes` of its referenced mandate. |
+| `WORK-053` | 2 | A render's `use_class` MUST NOT appear in that mandate's `exclusions`. |
+| `WORK-054` | 1 | `distribution_restriction` MUST be non-null when any `consent_coverage_bps` value is less than `10000`. |
+| `WORK-055` | 1 | `clearability.one_stop` MUST be `true` only when every `coverage_bps` value is `10000`. |
+| `WORK-056` | 1 | `disposition` MUST be a member of [§7.8](#78-derivation-dispositions); `disputes[].status` MUST be a member of [§7.9](#79-dispute-statuses). |
+| `WORK-057` | 2 | Every `affected_components` and `disputed_components` entry MUST resolve to a component in `content`. |
+| `WORK-058` | 2 | `dispute_id` MUST be non-null when `disposition` is `disputed`, and every `dispute_id` reference MUST resolve. |
+| `WORK-059` | 1 | `resolution` MUST be non-null when a dispute's `status` is terminal, and `resolved_at` MUST NOT precede `raised_at`. |
 
 **Signatures and status**
 
-| ID | Rule |
-| --- | --- |
-| `WORK-060` | Every signature MUST verify against the signing input defined in [§5.4](#54-the-signing-input). |
-| `WORK-061` | A document with `status` of `attested` MUST carry at least one valid signature from a party declared in `rights.parties`. |
-| `WORK-062` | A `timestamps` entry with `qualified` of `true` MUST name an authority on an EU member state Trusted List. |
-| `WORK-063` | Every value marked `derived: true` MUST have a corresponding entry in the provenance log. |
+| ID | L | Rule |
+| --- | --- | --- |
+| `WORK-060` | 3 | Every signature MUST verify against the signing input defined in [§5.4](#54-the-signing-input). |
+| `WORK-061` | 3 | A document with `status` of `attested` MUST carry at least one valid signature from a party declared in `rights.parties`. |
+| `WORK-062` | 3 | A `timestamps` entry with `qualified` of `true` MUST name an authority on an EU member state Trusted List. |
+| `WORK-063` | 3 | Every value marked `derived: true` MUST have a corresponding entry in the resolved provenance log. |
+| `WORK-064` | 3 | Every retrieved blob MUST hash to the `digest` of the entry that referenced it. |
+
+### 8.2 CWR projection profile
+
+These rules constrain a document's ability to **project into CWR**. They are not properties of the format, and a document that violates them is a valid `.work` document that will be rejected by a society. They are published under a distinct prefix so that a validator can report them without implying that the document is malformed.
+
+Implementing this profile is OPTIONAL and is not required for `.work` conformance ([§9.3](#93-conformant-validator)).
+
+| ID | L | Rule |
+| --- | --- | --- |
+| `CWR-001` | 1 | `identity.title` MUST be 1–60 characters. |
+| `CWR-002` | 1 | `identity.submitter_work_number` MUST be 1–14 characters. `work_id` is a ULID and cannot serve as one. |
+| `CWR-003` | 1 | `identity.language`, where non-null, MUST have an ISO 639-1 two-letter equivalent. |
+| `CWR-004` | 1 | Every `alternative_titles` entry MUST be 1–60 characters. |
+| `CWR-005` | 2 | Every controlled credit MUST reference a party with a non-null `ipi_name_number`. |
+| `CWR-006` | 2 | Every `clearance` whose `affects_ownership` is `false` is unrepresentable in CWR and MUST be reported as a lossy projection, not an error. |
 
 ---
 
@@ -638,17 +780,35 @@ Each rule has a stable identifier. Conformance fixtures in [conformance/](confor
 
 ### 9.1 Conformant producer
 
-MUST emit documents satisfying every rule in [§8](#8-validation-rules); MUST use JCS for canonicalisation; MUST NOT emit a `status` of `attested` without a valid signature; MUST NOT assert machine-derived values without provenance and confidence.
+MUST emit documents satisfying every rule in [§8.1](#81-levels); MUST use JCS for canonicalisation; MUST NOT emit a `status` of `attested` without a valid signature; MUST NOT assert machine-derived values without provenance and confidence; MUST NOT omit a known dispute or an uncleared derivation in order to produce a conformant file, neither of which this specification treats as a defect.
 
 ### 9.2 Conformant consumer
 
-MUST verify every signature before relying on any claim; MUST treat `digest` as authoritative and `locators` as advisory, verifying every retrieved blob against its digest; MUST preserve unrecognised fields and `ext` namespaces on round trip; MUST reject unrecognised digest algorithms and use classes rather than ignoring them; MUST NOT treat `clearability` as current without recomputing.
+MUST verify every signature before relying on any claim; MUST treat `digest` as authoritative and `locators` as advisory, verifying every retrieved blob against its digest; MUST preserve unrecognised fields and `ext` namespaces on round trip; MUST reject unrecognised digest algorithms and use classes rather than ignoring them; MUST NOT treat `clearability` as current without recomputing, or as applicable to a request other than its own `request`; MUST NOT reject a document for carrying an open `dispute` or an uncleared `derivation`; and, where a document carries `@context`, MUST verify signatures before any JSON-LD processing ([§5.7](#57-json-ld)).
 
 ### 9.3 Conformant validator
 
-MUST implement every rule in [§8](#8-validation-rules) and report violations by identifier; MUST pass every fixture in [conformance/](conformance/), accepting each valid document and rejecting each invalid one with exactly the expected rule identifiers.
+Validation rules are tiered by what is needed to decide them ([§8.1](#81-levels)). A validator declares the highest level it implements.
 
-A validator MAY implement rules beyond [§8](#8-validation-rules) but MUST report them under a distinct, non-`WORK-` prefix.
+| Level | Must implement |
+| --- | --- |
+| **L1** | every L1 rule |
+| **L2** | every L1 and L2 rule |
+| **L3** | every rule |
+
+**An L1 validator is conformant.** This is deliberate. A document-only validator is the one that can be a dependency-free library, a CI check or a page that validates a pasted file, and requiring key resolution and blob retrieval of every implementation would put the cost of adoption well above "read the schema".
+
+Every validator MUST:
+
+- report violations by rule identifier
+- declare the level it implements
+- report a rule above its level as **unchecked**, never as passed
+
+The third is the one that matters. Silently passing a rule you did not implement is indistinguishable, to the reader of the output, from the document being correct — and it is the failure this tiering exists to prevent.
+
+A conformant validator at level *n* MUST accept every document under [conformance/](conformance/)`valid/` reporting no violations, and MUST reject every document under `invalid/` whose declared rules are at level *n* or below, reporting exactly those identifiers. Fixtures turning on rules above its level are out of scope and MUST be reported as unchecked rather than passed or failed.
+
+A validator MAY implement rules beyond [§8.1](#81-levels) but MUST report them under a distinct, non-`WORK-` prefix. The CWR projection profile ([§8.2](#82-cwr-projection-profile)) is published under `CWR-` and is OPTIONAL: a `CWR-` violation means the document will not register at a society, not that it is malformed.
 
 ---
 
@@ -717,12 +877,14 @@ Implementations are neither certified nor endorsed. Conformance is a property a 
 
 Unresolved in `1.0.0-draft`:
 
-1. **`WORK-042` may be unenforceable as written.** Collection totals across a TIS hierarchy require resolving overlapping include/exclude claims, and non-controlled parties legitimately carry no territory claims. The rule may need scoping to controlled parties.
-2. **`attestations` overlaps `provenance_log`.** An attestation is current state on a relationship; provenance is the chronological log. Both carry attribution and confidence, and one should be derived from the other.
+1. **`WORK-042` is correct but expensive.** It is now scoped to controlled parties and classified L3, because resolving overlapping include/exclude claims requires the TIS hierarchy, which is not a public dataset. In practice only an L3 validator with a TIS licence can check it.
+2. **`attestations` overlaps `provenance_log`.** An attestation is current state on a relationship; provenance is the chronological log. Both carry attribution and confidence, and one should be derived from the other. The JSON-LD context ([§5.7](#57-json-ld)) maps both onto PROV-O, which may be where the duplication resolves.
 3. **No revocation or key rotation.** [§10](#10-security-considerations) states the gap.
-4. **`version_type` cannot express "original work containing a cleared interpolation".** CWR requires a choice between `ORI`, which discards the derivation, and `MOD`, which asserts the whole work is a version of the parent. A `.work` document records both, but cannot project both.
+4. **`version_type` cannot express "original work containing a cleared interpolation".** CWR requires a choice between `ORI`, which discards the derivation, and `MOD`, which asserts the whole work is a version of the parent. `derivation.disposition` ([§6.12](#612-derivation-object)) now records the real posture, but it still cannot be projected.
 5. **No canonical form for `.workpkg` ZIP entries**, so a `.workpkg` is not itself reproducibly digestible.
-6. **The `$schema` host, the `vnd.invoke` media type and the `invoke.works` extension namespace are organisation-specific.** The `vnd.` tree denotes a vendor format. Whether to move to a neutral host and media type is open.
+6. **The `$schema` host, the JSON-LD context IRI, the `vnd.invoke` media type and the `invoke.works` extension namespace are organisation-specific.** The `vnd.` tree denotes a vendor format. Publishing a context sharpens this: a context IRI is a permanent dependency on a host resolving, for the lifetime of every document that references it. Whether to move to a neutral host is open, and is better settled before the context ships than after.
+7. **Fingerprint interoperability is undefined.** [§6.4](#64-content-component-object) defines where a fingerprint lives and what it must not disclose, and says nothing about how two of them are compared. Without at least one named scheme, federated matching is a field rather than a capability.
+8. **`disputes` and `registrations` both record conflict.** A society's `CO` acknowledgement is an overclaim dispute by another name. They are kept separate because one is a protocol state and the other is not, but the boundary is not obviously in the right place.
 
 ---
 
@@ -730,4 +892,5 @@ Unresolved in `1.0.0-draft`:
 
 | Version | Date | Change |
 | --- | --- | --- |
+| `1.0.0-draft` | 2026-10-03 | Validation levels L1/L2/L3 and a conformant L1 validator class. CWR width limits moved to a `CWR-` projection profile. `derivation.cleared` replaced by `disposition`; `disputes[]` added; `content` roles opened with `bassline`, `rhythm` and `fingerprint`; render consent split per right; `clearability.request` added; `totals_bps.valid` removed; attestor grammar made decidable; optional JSON-LD context defined. |
 | `1.0.0-draft` | 2026-09-05 | Initial draft, extracted from the design notes. |

@@ -126,7 +126,22 @@
     }
   },
 
-  "derivation": [],
+  "derivation": [
+    {
+      "relation_type": "VER",
+      "role": "interpolation",
+      "parent_work_id": null,
+      "parent_iswc": null,
+      "parent_title": "Some Other Song",
+      "parent_locators": [],
+      "affected_components": [],
+      "description": null,
+      "attestations": [],
+      "disposition": "disputed",
+      "clearance_id": null,
+      "dispute_id": null
+    }
+  ],
   "clearances": [],
   "mandates": [],
   "clearability": null,

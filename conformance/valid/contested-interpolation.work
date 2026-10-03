@@ -1,0 +1,321 @@
+{
+  "$schema": "https://invoke.works/schema/work/v1",
+  "spec_version": "1.0.0",
+
+  "work_id": "01JC000000000000000000TDLN",
+  "version": 2,
+  "parent": "sha256:4a2c7e05b91d3f6082ae14c7d50b36f9e27a418c03bd59e746f2a08c15d7b934",
+  "created_at": "2026-08-26T10:05:00Z",
+  "status": "draft",
+
+  "identity": {
+    "iswc": null,
+    "submitter_work_number": "INV00000000488",
+    "title": "Tide Line",
+    "alternative_titles": [],
+    "language": "eng",
+    "duration_ms": 198240,
+    "version_type": "ORI",
+    "music_arrangement": null,
+    "lyric_adaptation": null,
+    "distribution_category": "POP",
+    "text_music_relationship": "MTX",
+    "composite_type": null,
+    "excerpt_type": null,
+    "recorded_indicator": true,
+    "grand_rights_ind": false,
+    "created_year": 2026
+  },
+
+  "content": [
+    {
+      "role": "melody",
+      "subrole": null,
+      "media_type": "audio/midi",
+      "digest": "sha256:7c13e8a0459f2bd6013ae75c8420f9b3d61c05ae8273f41d90b6ec5a3012d7f8",
+      "size": 7914,
+      "derived": true,
+      "attested_by": "01JC000000000000000000WRTR",
+      "computed_over": null,
+      "algorithm": null,
+      "locators": []
+    },
+    {
+      "role": "bassline",
+      "subrole": null,
+      "media_type": "audio/midi",
+      "digest": "sha256:b508e2c7341fa96d02b7e58c1930df64a7c20e59b41d836f05ae72c190b4d3e8",
+      "size": 3104,
+      "derived": true,
+      "attested_by": "01JC000000000000000000WRTR",
+      "computed_over": null,
+      "algorithm": null,
+      "locators": []
+    },
+    {
+      "role": "harmony",
+      "subrole": null,
+      "media_type": "application/json",
+      "digest": "sha256:e94b071c5ad83f26019e4b7c2850fd13a6c90e47b5283fd1704ae6c93b215d08",
+      "size": 1902,
+      "derived": true,
+      "attested_by": null,
+      "computed_over": null,
+      "algorithm": null,
+      "locators": []
+    },
+    {
+      "role": "lyrics",
+      "subrole": null,
+      "media_type": "text/plain; charset=utf-8",
+      "digest": "sha256:1f6a3c80d725be94017c3ae58b06f2d947ca10e85b3f726d04ae91c537b8d620",
+      "size": 2744,
+      "derived": false,
+      "attested_by": "01JC000000000000000000WRTR",
+      "computed_over": null,
+      "algorithm": null,
+      "locators": []
+    },
+    {
+      "role": "fingerprint",
+      "subrole": "melodic",
+      "media_type": "application/octet-stream",
+      "digest": "sha256:3b70e5a1946c2df8015b7ae3c806d429f71c50ea9b3d8267405ef1ca63b8d279",
+      "size": 512,
+      "derived": true,
+      "attested_by": null,
+      "computed_over": "melody",
+      "algorithm": "invoke:fp/melodic-ngram@1.0",
+      "locators": []
+    },
+    {
+      "role": "fingerprint",
+      "subrole": "bassline",
+      "media_type": "application/octet-stream",
+      "digest": "sha256:8d4192cb6a0f3e75024b8ce1907d3fa6b25c08ed471a936f50be2ca8137d6049",
+      "size": 512,
+      "derived": true,
+      "attested_by": null,
+      "computed_over": "bassline",
+      "algorithm": "invoke:fp/melodic-ngram@1.0",
+      "locators": []
+    }
+  ],
+
+  "evidence": [],
+  "renders": [],
+
+  "rights": {
+    "parties": [
+      {
+        "party_id": "01JC000000000000000000WRTR",
+        "canonical_party_id": null,
+        "type": "natural_person",
+        "last_name": "Adeyemi",
+        "first_name": "Rose",
+        "ipi_name_number": "00311447722",
+        "ipi_base_number": null,
+        "isni": null,
+        "ddex_party_id": null,
+        "societies": { "pr": "044", "mr": "044", "sr": null }
+      },
+      {
+        "party_id": "01JC000000000000000000PBSH",
+        "canonical_party_id": null,
+        "type": "legal_entity",
+        "name": "INVOKE Publishing Ltd",
+        "ipi_name_number": "00555000111",
+        "ipi_base_number": "I-000554321-9",
+        "isni": null,
+        "ddex_party_id": "PADPIDA2026020901Y",
+        "societies": { "pr": "044", "mr": "052", "sr": null }
+      }
+    ],
+
+    "credits": [
+      {
+        "credit_id": "c-001",
+        "party_id": "01JC000000000000000000WRTR",
+        "writer_designation": "CA",
+        "controlled": true,
+        "cwr_record": "SWR",
+        "agreement_id": "agr-001",
+        "ownership_bps": { "pr": 5000, "mr": 5000, "sr": 5000 },
+        "effective_from": "2026-01-05",
+        "effective_to": null,
+        "territory_claims": [
+          {
+            "tis_code": 2136,
+            "tis_name": "World",
+            "indicator": "I",
+            "collection_bps": { "pr": 5000, "mr": 5000, "sr": 5000 }
+          }
+        ]
+      },
+      {
+        "credit_id": "c-002",
+        "party_id": "01JC000000000000000000PBSH",
+        "publisher_type": "E",
+        "controlled": true,
+        "cwr_record": "SPU",
+        "agreement_id": "agr-001",
+        "publisher_sequence": 1,
+        "ownership_bps": { "pr": 5000, "mr": 5000, "sr": 5000 },
+        "effective_from": "2026-01-05",
+        "effective_to": null,
+        "territory_claims": [
+          {
+            "tis_code": 2136,
+            "tis_name": "World",
+            "indicator": "I",
+            "collection_bps": { "pr": 5000, "mr": 5000, "sr": 5000 }
+          }
+        ]
+      }
+    ],
+
+    "publisher_for_writer": [
+      { "writer_credit_id": "c-001", "publisher_credit_id": "c-002" }
+    ],
+
+    "agreements": [
+      {
+        "agreement_id": "agr-001",
+        "agreement_type": "OS",
+        "assignor_party_id": "01JC000000000000000000WRTR",
+        "assignee_party_id": "01JC000000000000000000PBSH",
+        "start_date": "2026-01-05",
+        "end_date": null,
+        "retention_end_date": null,
+        "post_term_collection_end_date": null,
+        "prior_royalty_status": "N",
+        "sales_manufacture_clause": "S",
+        "admin_commission_bps": 1500,
+        "document_digest": null
+      }
+    ],
+
+    "totals_bps": {
+      "ownership": { "pr": 10000, "mr": 10000, "sr": 10000 }
+    }
+  },
+
+  "derivation": [
+    {
+      "relation_type": "VER",
+      "role": "interpolation",
+      "parent_work_id": null,
+      "parent_iswc": null,
+      "parent_title": "Only Ever You",
+      "parent_locators": [],
+      "affected_components": ["bassline", "harmony"],
+      "description": "Four-bar bass figure over a repeating two-chord loop, alleged to be taken from the 1980 recording.",
+      "attestations": [
+        {
+          "claim": "work_derives_from_work",
+          "attestor": "invoke:pipeline/cover-id@0.3.1",
+          "created": "2026-01-14T08:22:41Z",
+          "confidence": 0.76,
+          "note": "Flagged pre-release against the published fingerprint index. Harmonic and bass similarity; melodic similarity below threshold."
+        },
+        {
+          "claim": "work_derives_from_work",
+          "attestor": "01JC000000000000000000WRTR",
+          "created": "2026-01-16T19:40:00Z",
+          "note": "Writer disagrees. Position is that the figure is a common two-chord vamp and the resemblance is coincidental."
+        }
+      ],
+      "disposition": "disputed",
+      "clearance_id": null,
+      "dispute_id": "dsp-001"
+    }
+  ],
+
+  "clearances": [],
+
+  "mandates": [
+    {
+      "mandate_id": "mnd-001",
+      "party_id": "01JC000000000000000000WRTR",
+      "granted_to": "01JC000000000000000000PBSH",
+      "rights": ["pr", "mr", "sr"],
+      "territories": [{ "tis_code": 2136, "indicator": "I" }],
+      "use_classes": ["sync_film", "sync_tv", "sync_advertising", "sync_game", "micro_sync"],
+      "rate_floor": { "currency": "GBP", "minor_units": 100000 },
+      "exclusions": ["ai_training", "ai_rendering", "artist_voice_cloning"],
+      "effective_from": "2026-01-05",
+      "effective_to": null
+    }
+  ],
+
+  "clearability": {
+    "computed_at": "2026-08-26T10:04:00Z",
+    "request": {
+      "use_class": "sync_film",
+      "territories": [{ "tis_code": 2136, "indicator": "I" }],
+      "term": "perpetuity"
+    },
+    "one_stop": true,
+    "coverage_bps": { "pr": 10000, "mr": 10000, "sr": 10000 },
+    "gaps": []
+  },
+
+  "disputes": [
+    {
+      "dispute_id": "dsp-001",
+      "claim": "work_derives_from_work",
+      "raised_at": "2026-08-19",
+      "claimant": {
+        "name": "Estate of A. Rivers",
+        "party_id": null,
+        "ipi_name_number": "00222111000"
+      },
+      "claimed_parent_title": "Only Ever You",
+      "claimed_parent_iswc": null,
+      "disputed_components": ["bassline", "harmony"],
+      "forum": "Correspondence. Letter before action, Willoughby & Sons.",
+      "status": "contested",
+      "response": "Denied. The bass figure and chord loop are asserted to be commonplace and unprotectable; the melody and lyric are not in issue. The pre-release flag at 0.76 and the writer's recorded disagreement both predate the claim by seven months.",
+      "resolved_at": null,
+      "resolution": null,
+      "document_digests": [
+        "sha256:c20a86f3915d7be4038c1ae6509b2f7d41e60ca895b3d2f70164ae8c23b5d917"
+      ]
+    }
+  ],
+
+  "registrations": [],
+
+  "provenance_log": {
+    "digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "media_type": "application/jsonl",
+    "locators": []
+  },
+  "provenance_recent": [
+    {
+      "at": "2026-01-14T08:22:41Z",
+      "actor": "invoke:pipeline/cover-id@0.3.1",
+      "action": "flagged",
+      "target": "derivation",
+      "from": "content.fingerprint.bassline",
+      "confidence": 0.76
+    },
+    {
+      "at": "2026-01-16T19:40:00Z",
+      "actor": "01JC000000000000000000WRTR",
+      "action": "contested",
+      "target": "derivation",
+      "note": "Writer reviewed the flag and did not accept it. Recorded rather than removed."
+    },
+    {
+      "at": "2026-08-26T10:05:00Z",
+      "actor": "01JC000000000000000000PBSH",
+      "action": "raised",
+      "target": "disputes.dsp-001",
+      "note": "Letter before action received 2026-08-19. Derivation disposition moved from independent_creation_asserted to disputed."
+    }
+  ],
+
+  "timestamps": [],
+  "signatures": []
+}

@@ -122,8 +122,7 @@
     ],
 
     "totals_bps": {
-      "ownership": { "pr": 10000, "mr": 10000, "sr": 10000 },
-      "valid": true
+      "ownership": { "pr": 10000, "mr": 10000, "sr": 10000 }
     }
   },
 
@@ -131,6 +130,7 @@
   "clearances": [],
   "mandates": [],
   "clearability": null,
+  "disputes": [],
   "registrations": [],
 
   "provenance_log": {

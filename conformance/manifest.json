@@ -1,57 +1,103 @@
 {
-  "corpus_version": "1.0.0-draft",
+  "corpus_version": "1.1.0-draft",
   "spec_version": "1.0.0",
-  "description": "Conformance fixtures for the .work format. A conformant validator MUST accept every document under valid/ with no WORK- violations, and MUST reject every document under invalid/ reporting exactly the rule identifiers listed against it.",
+  "description": "Conformance fixtures for the .work format. A conformant validator at level n MUST accept every document under valid/ reporting no violations, and MUST reject every document under invalid/ whose rules are at level n or below, reporting exactly the identifiers listed against it. Fixtures above its level are out of scope and MUST be reported as unchecked, never as passed.",
+
+  "levels": {
+    "1": "Structural. Decidable from the document's own bytes, a field at a time.",
+    "2": "Referential. Decidable from the document as a whole, with references resolved and aggregates recomputed.",
+    "3": "External. Requires data outside the document: blobs, public keys, EU Trusted Lists, the TIS hierarchy, the provenance log, parent documents."
+  },
 
   "valid": [
     {
       "path": "valid/minimal.work",
+      "max_level": 2,
       "description": "The smallest document that satisfies every rule. One controlled writer, one publisher, one agreement, a PWR link, shares totalling 10000 per right, no content and no signatures."
     },
     {
+      "path": "valid/contested-interpolation.work",
+      "max_level": 2,
+      "description": "A work carrying an open infringement claim. A similarity model flagged a bass figure and chord loop pre-release at 0.76, the writer recorded disagreement rather than deleting the flag, and seven months later an estate sent a letter before action. The derivation sits at disposition 'disputed' with a dispute_id, and the dispute records the claim without adjudicating it. Note that clearability reports one_stop true: mandate coverage and legal risk are different questions and a consumer must not read one as the other."
+    },
+    {
       "path": "../example.work",
-      "description": "The full worked example. Two writers with only one controlled, a German sub-publisher expressed as include/exclude TIS claims, a cleared interpolation whose consideration does not affect ownership, a split registration outcome, a consent-limited render, and a double attestation on the derivation."
+      "max_level": 2,
+      "description": "The full worked example. Two writers with only one controlled, a German sub-publisher expressed as include/exclude TIS claims, a cleared interpolation whose consideration does not affect ownership, a split registration outcome, a consent-limited render, publishable fingerprints over the melody and bassline, and a double attestation on the derivation. Carries an @context, so it also exercises JSON-LD compatibility."
     }
   ],
 
   "invalid": [
     {
       "path": "invalid/shares-do-not-total.work",
-      "violates": ["WORK-032"],
-      "description": "Publisher ownership is 4000 rather than 5000, so ownership totals 9000 per right. totals_bps still claims 10000 and valid:true, so this also tests that a validator recomputes rather than trusting the declared total."
+      "base": "valid/minimal.work",
+      "violates": ["WORK-032", "WORK-043"],
+      "level": 2,
+      "description": "Publisher ownership is 4000 rather than 5000, so ownership totals 9000 per right while totals_bps still declares 10000. Two violations from one mutation: the computed total is wrong, and the declared total does not match it."
+    },
+    {
+      "path": "invalid/totals-mismatch.work",
+      "base": "valid/minimal.work",
+      "violates": ["WORK-043"],
+      "level": 2,
+      "description": "Credits total correctly at 10000 per right, but totals_bps declares 9000 for pr. Isolates the declared-versus-computed check from the arithmetic check above. A validator that reads the declared total instead of recomputing reports nothing."
     },
     {
       "path": "invalid/missing-pwr.work",
+      "base": "valid/minimal.work",
       "violates": ["WORK-036"],
+      "level": 2,
       "description": "publisher_for_writer is empty while a controlled SWR credit exists. There is no chain of title, and the CWR projection would be rejected by the society."
     },
     {
       "path": "invalid/merged-role-vocabulary.work",
+      "base": "valid/minimal.work",
       "violates": ["WORK-034"],
+      "level": 1,
       "description": "A single credit carries both writer_designation and publisher_type, which describes a composer-publisher. The two CWR vocabularies are distinct and must not be merged."
+    },
+    {
+      "path": "invalid/disputed-without-dispute-id.work",
+      "base": "valid/minimal.work",
+      "violates": ["WORK-058"],
+      "level": 2,
+      "description": "A derivation at disposition 'disputed' with a null dispute_id and an empty disputes array. The document asserts that someone has made a claim and then says nothing about who, when, or on what basis."
     }
   ],
 
   "todo": [
-    { "path": "invalid/bad-iswc-check-digit.work", "violates": ["WORK-011"] },
-    { "path": "invalid/mod-without-arrangement.work", "violates": ["WORK-012"] },
-    { "path": "invalid/submitter-work-number-too-long.work", "violates": ["WORK-013"] },
-    { "path": "invalid/duplicate-content-role.work", "violates": ["WORK-020"] },
-    { "path": "invalid/confidence-on-party-attestation.work", "violates": ["WORK-024"] },
-    { "path": "invalid/attestations-out-of-order.work", "violates": ["WORK-025"] },
-    { "path": "invalid/unresolved-reference.work", "violates": ["WORK-031"] },
-    { "path": "invalid/float-share.work", "violates": ["WORK-033"] },
-    { "path": "invalid/control-record-mismatch.work", "violates": ["WORK-035"] },
-    { "path": "invalid/exclusion-with-nonzero-shares.work", "violates": ["WORK-037"] },
-    { "path": "invalid/controlled-without-agreement.work", "violates": ["WORK-038"] },
-    { "path": "invalid/retention-precedes-end-date.work", "violates": ["WORK-041"] },
-    { "path": "invalid/cleared-without-clearance-id.work", "violates": ["WORK-050"] },
-    { "path": "invalid/render-use-class-not-mandated.work", "violates": ["WORK-052"] },
-    { "path": "invalid/render-use-class-excluded.work", "violates": ["WORK-053"] },
-    { "path": "invalid/partial-consent-unrestricted.work", "violates": ["WORK-054"] },
-    { "path": "invalid/one-stop-with-gaps.work", "violates": ["WORK-055"] },
-    { "path": "invalid/attested-without-signature.work", "violates": ["WORK-061"] },
-    { "path": "invalid/broken-signature.work", "violates": ["WORK-060"] },
-    { "path": "invalid/parent-set-on-version-one.work", "violates": ["WORK-004"] }
+    { "path": "invalid/parent-set-on-version-one.work", "violates": ["WORK-004"], "level": 1 },
+    { "path": "invalid/invalid-status-superseded.work", "violates": ["WORK-007"], "level": 1 },
+    { "path": "invalid/bad-iswc-check-digit.work", "violates": ["WORK-011"], "level": 1 },
+    { "path": "invalid/mod-without-arrangement.work", "violates": ["WORK-012"], "level": 1 },
+    { "path": "invalid/duplicate-content-role.work", "violates": ["WORK-020"], "level": 1 },
+    { "path": "invalid/confidence-on-party-attestation.work", "violates": ["WORK-024"], "level": 2 },
+    { "path": "invalid/attestations-out-of-order.work", "violates": ["WORK-025"], "level": 1 },
+    { "path": "invalid/attestor-unresolvable.work", "violates": ["WORK-027"], "level": 2 },
+    { "path": "invalid/fingerprint-without-algorithm.work", "violates": ["WORK-028"], "level": 2 },
+    { "path": "invalid/unknown-content-role.work", "violates": ["WORK-029"], "level": 1 },
+    { "path": "invalid/unresolved-reference.work", "violates": ["WORK-031"], "level": 2 },
+    { "path": "invalid/float-share.work", "violates": ["WORK-033"], "level": 1 },
+    { "path": "invalid/control-record-mismatch.work", "violates": ["WORK-035"], "level": 1 },
+    { "path": "invalid/exclusion-with-nonzero-shares.work", "violates": ["WORK-037"], "level": 1 },
+    { "path": "invalid/controlled-without-agreement.work", "violates": ["WORK-038"], "level": 1 },
+    { "path": "invalid/retention-precedes-end-date.work", "violates": ["WORK-041"], "level": 1 },
+    { "path": "invalid/cleared-without-clearance-id.work", "violates": ["WORK-050"], "level": 1 },
+    { "path": "invalid/non-ownership-beneficiary-holds-credit.work", "violates": ["WORK-051"], "level": 2 },
+    { "path": "invalid/render-use-class-not-mandated.work", "violates": ["WORK-052"], "level": 2 },
+    { "path": "invalid/render-use-class-excluded.work", "violates": ["WORK-053"], "level": 2 },
+    { "path": "invalid/partial-consent-unrestricted.work", "violates": ["WORK-054"], "level": 1 },
+    { "path": "invalid/one-stop-with-gaps.work", "violates": ["WORK-055"], "level": 1 },
+    { "path": "invalid/unknown-disposition.work", "violates": ["WORK-056"], "level": 1 },
+    { "path": "invalid/unresolved-affected-component.work", "violates": ["WORK-057"], "level": 2 },
+    { "path": "invalid/terminal-dispute-without-resolution.work", "violates": ["WORK-059"], "level": 1 },
+    { "path": "invalid/broken-signature.work", "violates": ["WORK-060"], "level": 3 },
+    { "path": "invalid/attested-without-signature.work", "violates": ["WORK-061"], "level": 3 }
+  ],
+
+  "cwr_profile_todo": [
+    { "path": "cwr/title-too-long.work", "violates": ["CWR-001"], "level": 1 },
+    { "path": "cwr/submitter-work-number-too-long.work", "violates": ["CWR-002"], "level": 1 },
+    { "path": "cwr/controlled-credit-without-ipi.work", "violates": ["CWR-005"], "level": 2 }
   ]
 }
