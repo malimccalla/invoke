@@ -40,9 +40,23 @@ Twenty-five values. Intervals are differences, so transposing the melody by any 
 
 Let `IOIₖ = onset(n_{k+1}) − onset(n_k)`. For `k` in `1 … N-2`:
 
-$$r_k = \frac{\mathrm{IOI}_{k+1}}{\mathrm{IOI}_k}, \qquad d_k = \mathrm{clamp}\left(\mathrm{round}\left(2\log_2 r_k\right),\ -3,\ +3\right)$$
+$$r_k = \frac{\mathrm{IOI}_{k+1}}{\mathrm{IOI}_k}$$
 
-Seven values. `round` is half-away-from-zero. A ratio is scale-free, so doubling the tempo of the whole melody leaves every `dₖ` unchanged, and no beat grid is needed to obtain that. Quantising to seven classes at half-octave resolution absorbs the expressive timing that would otherwise make two performances of one phrase disagree on every token.
+Classify `rₖ` into seven values by strict comparison against six fixed thresholds, in order:
+
+| `dₖ` | Condition |
+| --- | --- |
+| `-3` | `r < 0.42044820762685725` |
+| `-2` | `r < 0.59460355750136053` |
+| `-1` | `r < 0.84089641525371454` |
+| `0` | `r < 1.18920711500272107` |
+| `1` | `r < 1.68179283050742909` |
+| `2` | `r < 2.37841423000544171` |
+| `3` | otherwise |
+
+The thresholds are the midpoints of a half-octave grid in log space — `2^((2c+1)/4)` for `c = -3 … 2` — and they are written out rather than computed deliberately. An earlier draft specified `clamp(round(2 log₂ r), -3, 3)`, which partitions the line identically and decides the partition by a rounding operation whose behaviour at exactly `.5` differs between languages, applied to a value carrying the accumulated error of `log₂`. A ratio of `2^0.25` is a boundary case that two correct implementations can straddle. Explicit constants and strict `<` are decidable identically everywhere, and an implementation MUST NOT substitute the logarithmic form.
+
+A ratio is scale-free, so doubling the tempo of the whole melody leaves every `dₖ` unchanged, and no beat grid is needed to obtain that. Quantising to seven classes at half-octave resolution absorbs the expressive timing that would otherwise make two performances of one phrase disagree on every token.
 
 Where `IOIₖ` is zero the ratio is undefined; step 2 of §2 makes this unreachable, and an implementation encountering it MUST fail rather than substitute a value.
 
