@@ -21,6 +21,11 @@
       "description": "A work carrying an open infringement claim. A similarity model flagged a bass figure and chord loop pre-release at 0.76, the writer recorded disagreement rather than deleting the flag, and seven months later an estate sent a letter before action. The derivation sits at disposition 'disputed' with a dispute_id, and the dispute records the claim without adjudicating it. Note that clearability reports one_stop true: mandate coverage and legal risk are different questions and a consumer must not read one as the other."
     },
     {
+      "path": "valid/cover-recording.work",
+      "max_level": 2,
+      "description": "One work, three recordings. A phone demo, a studio master and a licensed cover by another artist, transposed up a fourth and taken at two thirds tempo, all sitting in evidence under one work_id at version 2. The cover shares no spectral content with the master and is still the same work: the matcher attested at 0.91 with a confidence, the writer attested afterwards without one, and the ISWC, the writers and the split are untouched by any of it. The case the format exists to make expressible."
+    },
+    {
       "path": "../example.work",
       "max_level": 2,
       "description": "The full worked example. Two writers with only one controlled, a German sub-publisher expressed as include/exclude TIS claims, a cleared interpolation whose consideration does not affect ownership, a split registration outcome, a consent-limited render, publishable fingerprints over the melody and bassline, and a double attestation on the derivation. Carries an @context, so it also exercises JSON-LD compatibility."
@@ -62,6 +67,20 @@
       "violates": ["WORK-058"],
       "level": 2,
       "description": "A derivation at disposition 'disputed' with a null dispute_id and an empty disputes array. The document asserts that someone has made a claim and then says nothing about who, when, or on what basis."
+    },
+    {
+      "path": "invalid/machine-asserted-same-work.work",
+      "base": "valid/minimal.work",
+      "violates": ["WORK-075"],
+      "level": 2,
+      "description": "A related_works relation of same_work carrying only a producer attestation. A score of 0.91 is a reason to telephone someone; it is not a finding that two registrations are one asset. The strongest relation a machine may assert is candidate_same_work, and a pipeline permitted to promote its own output will eventually merge two unrelated songs over a shared figure."
+    },
+    {
+      "path": "invalid/fingerprint-disclosure-exact.work",
+      "base": "valid/minimal.work",
+      "violates": ["WORK-068"],
+      "level": 1,
+      "description": "A fingerprint declaring disclosure 'exact' over the melody component. An encoding the source can be recovered from intact is a copy of the work, and publishing it under a role described as publishable would disclose the thing the role exists to avoid disclosing. The vocabulary contains 'exact' so that the prohibition has something to name."
     }
   ],
 
@@ -91,6 +110,15 @@
     { "path": "invalid/unknown-disposition.work", "violates": ["WORK-056"], "level": 1 },
     { "path": "invalid/unresolved-affected-component.work", "violates": ["WORK-057"], "level": 2 },
     { "path": "invalid/terminal-dispute-without-resolution.work", "violates": ["WORK-059"], "level": 1 },
+    { "path": "invalid/unknown-evidence-role.work", "violates": ["WORK-065"], "level": 1 },
+    { "path": "invalid/fingerprint-without-subrole.work", "violates": ["WORK-066"], "level": 1 },
+    { "path": "invalid/disclosure-on-non-fingerprint.work", "violates": ["WORK-067"], "level": 1 },
+    { "path": "invalid/unknown-work-relation.work", "violates": ["WORK-070"], "level": 1 },
+    { "path": "invalid/related-work-unidentified.work", "violates": ["WORK-071"], "level": 1 },
+    { "path": "invalid/score-without-method.work", "violates": ["WORK-072"], "level": 1 },
+    { "path": "invalid/related-work-is-self.work", "violates": ["WORK-073"], "level": 2 },
+    { "path": "invalid/unresolved-matched-component.work", "violates": ["WORK-074"], "level": 2 },
+    { "path": "invalid/disputed-same-work-without-dispute-id.work", "violates": ["WORK-076"], "level": 2 },
     { "path": "invalid/broken-signature.work", "violates": ["WORK-060"], "level": 3 },
     { "path": "invalid/attested-without-signature.work", "violates": ["WORK-061"], "level": 3 }
   ],

@@ -27,7 +27,34 @@
     "created_year": 2026
   },
 
-  "content": [],
+  "content": [
+    {
+      "role": "melody",
+      "subrole": null,
+      "media_type": "audio/midi",
+      "digest": "sha256:2d7b05ae91c640f3157ae08bc2d9304f61be75c03a92d8e7401fc6b593a0d218",
+      "size": 4096,
+      "derived": true,
+      "attested_by": null,
+      "computed_over": null,
+      "algorithm": null,
+      "disclosure": null,
+      "locators": []
+    },
+    {
+      "role": "fingerprint",
+      "subrole": "melodic",
+      "media_type": "application/octet-stream",
+      "digest": "sha256:84e1c07b532da96f0128be45c307d9fa26b10e53c84fa27309be1d75c4a30f68",
+      "size": 4096,
+      "derived": true,
+      "attested_by": null,
+      "computed_over": "melody",
+      "algorithm": "invoke:fp/verbatim-midi@1.0",
+      "disclosure": "exact",
+      "locators": []
+    }
+  ],
   "evidence": [],
   "renders": [],
 
@@ -122,7 +149,7 @@
     ],
 
     "totals_bps": {
-      "ownership": { "pr": 9000, "mr": 10000, "sr": 10000 }
+      "ownership": { "pr": 10000, "mr": 10000, "sr": 10000 }
     }
   },
 

@@ -17,6 +17,7 @@ A `.work` file is a signed, content-addressed, versioned JSON document describin
 | **[example.work](example.work)** | A complete, valid document exercising every awkward case. |
 | **[conformance/](conformance/)** | Fixtures a validator must pass — valid documents, invalid ones, and the rules each violates. |
 | **[mappings/](mappings/)** | Crosswalks into CWR, Apache Sourcelume and, in time, the DDEX works stack. |
+| **[fingerprints/](fingerprints/)** | Named fingerprint schemes — what the bytes mean, how two of them are compared, and what each one discloses. |
 | **[context/](context/v1/work.jsonld)** | An optional JSON-LD context. Add one member and the document is a graph. |
 
 ---
@@ -69,9 +70,22 @@ Roadmap:
 
 1. Publish the JSON Schema at its `$schema` URL
 2. Release the reference validator
-3. Complete the conformance corpus — 5 of 32 fixtures written
+3. Complete the conformance corpus — 8 of 42 fixtures written
 4. CWR `NWR` projection
-5. Name a fingerprint scheme, so federated similarity matching is a capability and not just a field
+5. Write the fingerprint test vectors, so two implementations of a named scheme can be shown to agree
+6. Measure the disclosure classes in [fingerprints/](fingerprints/), by attempting the inversions rather than reasoning about them
+
+---
+
+## Two recordings, one song
+
+A sound recording fingerprint — Chromaprint, and what Shazam does — hashes pairs of spectral peaks. It survives codecs, bitrates and noise, and it does not survive a second performance. A live take by the same band shares almost nothing with the studio master, by design: it identifies a *recording*.
+
+A work is not a recording. Two recordings of one song may share no spectral content at all, and what persists between them is structural — a sequence of intervals, a progression, a lyric. [fingerprints/](fingerprints/) names schemes over those, invariant to key, tempo, timbre and arrangement, and [fusion-v1](fingerprints/fusion-v1.md) combines them, because melody alone breaks on ornament and harmony alone cannot tell two twelve-bar blues apart.
+
+When a second recording turns up, the answer is usually that **it is not a new work**. A demo, a master, a live take, a cover and a remix are five recordings and one song: five entries in `evidence`, one `work_id`, same ISWC, same split — [conformance/valid/cover-recording.work](conformance/valid/cover-recording.work). The work changed only if the lyric or the melody did, and then it is a separate document carrying a `derivation`. Where the other recording belongs to somebody else's document, nothing is merged at all: `related_works` records a one-sided assertion about a file that stays where it is.
+
+A machine may assert `candidate_same_work` and no more. Promotion needs a person. A score says two things resemble each other; it does not say they are the same asset, and a pipeline that confuses the two dissolves one writer's copyright into another's.
 
 ---
 

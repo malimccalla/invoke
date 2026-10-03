@@ -242,27 +242,44 @@ Producers SHOULD reference the context by IRI rather than inlining it, so that e
 | `size` | integer | ✓ | Bytes. |
 | `derived` | boolean | ✓ | `true` if machine-produced. |
 | `attested_by` | string \| null | | `party_id` of a party who has confirmed the component. |
-| `computed_over` | string \| null | ✓ | REQUIRED (non-null) when `role` is `fingerprint`: the `role` or `role.subrole` of the component it was computed from. MUST resolve. |
-| `algorithm` | string \| null | ✓ | REQUIRED (non-null) when `role` is `fingerprint`. Named and versioned, e.g. `invoke:fp/melodic-ngram@1.0`. |
+| `computed_over` | string \| null | ✓ | REQUIRED (non-null) when `role` is `fingerprint`: a component reference naming what it was computed from. MUST resolve. |
+| `algorithm` | string \| null | ✓ | REQUIRED (non-null) when `role` is `fingerprint`. A scheme, named and versioned under the producer grammar in [§6.16](#616-attestation-object), e.g. `invoke:fp/melodic-ngram@1.0`. |
+| `disclosure` | string \| null | ✓ | REQUIRED (non-null) when `role` is `fingerprint`, otherwise MUST be `null`. See [§7.12](#712-fingerprint-disclosure-classes). |
 | `locators` | array of string (URI) | ✓ | Advisory. MAY be empty. |
 
-Components are addressed by `role`, or by `role.subrole` where a subrole is present. `content.melody` and `content.fingerprint.melodic` are stable references; an array index is not.
+Components are addressed by `role`, or by `role.subrole` where a subrole is present. `melody` and `fingerprint.melodic` are stable references; an array index is not.
 
-**`fingerprint` is the only role intended to be published.** Every other component discloses the work. A fingerprint is a one-way perceptual encoding — a melodic n-gram hash, an embedding — from which the component it was computed over cannot be reconstructed, and a producer MUST NOT emit one from which it can.
+A reference resolves against `content` unless it carries the prefix `evidence:`, which resolves it against `evidence` — `evidence:reference_recording`. **Only `computed_over` accepts the prefixed form.** `affected_components` ([§6.12](#612-derivation-object)), `disputed_components` ([§6.21](#621-dispute-object)) and `matched_components` ([§6.22](#622-related-work-object)) name components of this work and MUST resolve against `content`.
 
-It exists for a specific reason. Detecting that two works share material requires comparing them, which has always required somebody to hold both. No rightsholder will surrender a catalogue to a central index, and every attempt to build one has failed. Publishable fingerprints make the comparison federated: parties publish fingerprints, keep the works, and compute similarity against each other without any of them holding the other's repertoire. This specification defines the field, not the matching — `algorithm` names the scheme, and interoperability between schemes is out of scope for `1.0`.
+The prefix exists because not every fingerprint is computed over a transcription. A learned embedding takes audio and emits a vector, producing no intermediate component to point at; without a way to name the recording it was computed from, its provenance would be unstatable and the scheme unusable.
+
+**`fingerprint` is the only role intended to be published.** Every other component discloses the work outright. A fingerprint is a lossy perceptual encoding — an n-gram sketch, an embedding — published so that two parties can compute similarity without either holding the other's repertoire.
+
+It discloses *something*, and this specification no longer claims otherwise. An earlier draft required that the component a fingerprint was computed over "cannot be reconstructed". No publishable scheme in this class has that property: the space of short n-grams is small enough to enumerate exhaustively, and overlapping n-grams chain back into the contour they were taken from. A requirement that every conforming implementation violates is worse than no requirement, because it teaches implementers that the normative language is decorative.
+
+The claim is graded instead. Every fingerprint entry MUST declare a `disclosure` class ([§7.12](#712-fingerprint-disclosure-classes)), and every named scheme MUST declare the class it achieves. A producer MUST NOT publish a fingerprint whose class exceeds what the rightsholder has agreed to disclose, and MUST NOT emit `exact` under this role at all ([WORK-068](#8-validation-rules)) — an encoding from which the source is recoverable intact is a copy, and belongs in `content` with the rest of the work.
+
+Federation is the point. Detecting that two works share material requires comparing them, which has always required somebody to hold both. No rightsholder will surrender a catalogue to a central index, and every attempt to build one has failed for that reason. Publishable fingerprints move the comparison between the fingerprints: parties publish those, keep the works, and compute similarity without any of them assembling the repertoire. `algorithm` names the scheme; the named schemes, their byte layouts and their comparison functions are published in [fingerprints/](fingerprints/) and versioned independently of this specification.
 
 ### 6.5 Evidence Object
 
 `evidence` — recordings and documents evidencing that the work exists. A sound recording appears here only as evidence, never as a primary entity.
 
-Fields as [§6.4](#64-content-component-object), except that the (`role`, `subrole`) pair need not be unique and `computed_over` and `algorithm` do not apply, plus:
+Fields as [§6.4](#64-content-component-object), except that `role` MUST be a member of [§7.10](#710-evidence-roles), the (`role`, `subrole`) pair need not be unique, and `computed_over`, `algorithm` and `disclosure` do not apply, plus:
 
 | Field | Type | R | Description |
 | --- | --- | --- | --- |
 | `isrc` | string \| null | | 12 characters, no hyphens. |
 | `recorded_at` | string (date) \| null | | |
 | `attestations` | array | ✓ | See [§6.16](#616-attestation-object). MAY be empty. |
+
+**Every recording of the work belongs in this array, however different it sounds.** A phone demo, a studio master, a live take, a cover by another artist and a remix are five recordings and one work. They are five entries in `evidence`, under one `work_id`, accumulated across successive versions ([§4.2](#42-version-chain)) — not five documents.
+
+The test for whether a newly presented recording is evidence of *this* work is whether **the work** changed, not whether the recording did. A key change, a halved tempo, a different singer, a reharmonisation, a new arrangement and a new production all change the recording and leave the work untouched. A new lyric, a translated lyric, a materially different melody, or new material laid over the existing material change the work, and produce a separate document carrying a `derivation` entry ([§6.12](#612-derivation-object)) rather than an entry here.
+
+That distinction is the one a matching pipeline exists to inform and MUST NOT make on its own. A similarity score says two things resemble each other; it does not say which of them is the work.
+
+Where the recording belongs to a work held by someone else, neither branch applies. A producer MUST NOT append evidence to, or otherwise modify, a document it did not produce. A relationship to a work held elsewhere is recorded in `related_works` ([§6.22](#622-related-work-object)).
 
 ### 6.6 Render Object
 
@@ -475,11 +492,11 @@ A mandate is scoped by right, territory and use class ([§6.14](#614-mandate-obj
 
 ### 6.16 Attestation Object
 
-An attestation records who asserted a claim about a **relationship**, when, and how confident they were. It appears on `evidence` and `derivation` entries as an ordered array.
+An attestation records who asserted a claim about a **relationship**, when, and how confident they were. It appears on `evidence`, `derivation` and `related_works` entries as an ordered array.
 
 | Field | Type | R | Description |
 | --- | --- | --- | --- |
-| `claim` | string | ✓ | `recording_embodies_work` \| `work_derives_from_work`. |
+| `claim` | string | ✓ | `recording_embodies_work` \| `work_derives_from_work` \| `work_is_same_work` |
 | `attestor` | string | ✓ | A `party_id`, or a producer identifier such as `invoke:pipeline/cover-id@0.3.1`. |
 | `created` | string (date-time) | ✓ | |
 | `confidence` | number | — | `0.0`–`1.0`. **MUST be present when the attestor is a producer. MUST be absent when the attestor is a party.** |
@@ -568,7 +585,7 @@ Namespaces MUST be reverse-DNS or DNS names controlled by the extending implemen
 | Field | Type | R | Description |
 | --- | --- | --- | --- |
 | `dispute_id` | string | ✓ | Unique within the document. |
-| `claim` | string | ✓ | `work_derives_from_work` \| `ownership` \| `credit`. |
+| `claim` | string | ✓ | `work_derives_from_work` \| `same_work` \| `ownership` \| `credit`. |
 | `raised_at` | string (date) | ✓ | |
 | `claimant` | object | ✓ | `name` (string), plus nullable `party_id` and `ipi_name_number`. |
 | `claimed_parent_title` | string \| null | ✓ | Non-null where `claim` is `work_derives_from_work`. |
@@ -586,6 +603,34 @@ Design constraint 4 holds that conflicts are data rather than errors, but before
 A dispute is **recorded, not adjudicated.** The presence of an entry says that a claim was made and by whom; it says nothing about whether the claim is good. `status` tracks the claim's procedural state and `resolution` records the outcome in plain words. There is deliberately no field asserting that a dispute was meritless, and a consumer MUST NOT infer from a `withdrawn` or `settled` status that the underlying allegation was false.
 
 **A document carrying an open dispute is still a valid document.** Rejecting it would destroy the only record of the dispute, and a producer who can only emit a conformant file by omitting an inconvenient fact will omit it.
+
+### 6.22 Related Work Object
+
+`related_works` — assertions that this work stands in some relation to a work described by a **different document**. MAY be empty.
+
+Every other relation in this format is internal. `content` and `evidence` describe this work; `derivation` names a parent and records the posture towards it. None of them can say *these two documents are the same song*. Nothing could, because `work_id` is stable only within a single document's version chain ([§4.1](#41-document-identity)) and there has been no work-level equivalent of `canonical_party_id` ([§6.7](#67-party-object)).
+
+| Field | Type | R | Description |
+| --- | --- | --- | --- |
+| `relation` | string | ✓ | See [§7.11](#711-work-relations). |
+| `related_work_id` | string \| null | ✓ | The other document's `work_id`, where known. |
+| `related_iswc` | string \| null | ✓ | ISO 15707, as [§6.1](#61-identity-object). |
+| `related_title` | string \| null | ✓ | |
+| `related_locators` | array of string (URI) | ✓ | Where the other document may be retrieved. Advisory. MAY be empty. |
+| `matched_components` | array of string | ✓ | References into `content`, naming what matched. MUST resolve. MAY be empty. |
+| `method` | string \| null | ✓ | The scheme that produced the match, e.g. `invoke:fp/melodic-ngram@1.0`. `null` where no machine was involved. |
+| `score` | number \| null | ✓ | What `method`'s comparison function returned. MUST be `null` where `method` is `null`. |
+| `attestations` | array | ✓ | See [§6.16](#616-attestation-object). MAY be empty. |
+| `dispute_id` | string \| null | ✓ | MUST be non-null when `relation` is `disputed_same_work`, and `null` otherwise. MUST resolve. |
+| `note` | string \| null | | |
+
+**A machine may assert `candidate_same_work` and nothing stronger.** Promotion to `same_work` requires an attestation by a party ([WORK-075](#8-validation-rules)). A fingerprint answers whether two things resemble each other; `same_work` answers whether two registrations are the same asset, and collect from the same pot. The second does not follow from the first. A pipeline that collapses them will eventually merge two unrelated songs built on the same four chords, and dissolve one writer's copyright into another's.
+
+**The relation is one-sided, and it is not a merge.** An entry here records what this document's holder asserts about another document. It does not modify that document, require its holder's agreement, or oblige them to reciprocate. A consumer MUST NOT treat an unreciprocated `same_work` as an error, and MUST NOT infer from this entry that the two documents' rights graphs may be combined. The canonical copy of the other work stays with whoever holds it, which is the whole reason this object exists instead of a merge instruction.
+
+Where both documents are held by the same party, this object is the wrong tool. One work is one document, and a second recording of it is an entry in `evidence` ([§6.5](#65-evidence-object)).
+
+Two documents asserting `same_work` while carrying different non-null `iswc` values is a duplicate registration at a society, not a defect in either document. Neither is invalid, and a consumer MUST NOT resolve the conflict by discarding one.
 
 ---
 
@@ -638,6 +683,12 @@ This list is extensible via a minor version. Implementations MUST reject an unre
 
 The set is open to additions by minor version and closed to a producer. `bassline` and `rhythm` are present because the material most often alleged to be copied is a bassline over a chord loop, and a vocabulary that could not name it could not describe the claim.
 
+Where `role` is `fingerprint`, `subrole` MUST be non-null and a member of:
+
+`melodic` `harmonic` `bassline` `rhythm` `lyric` `embedding`
+
+A subrole names the **channel** a fingerprint encodes, not the scheme that encoded it. The scheme is named by `algorithm`, and two schemes encoding the same channel are two entries sharing a subrole — which is why [WORK-020](#8-validation-rules) keys fingerprint uniqueness on `algorithm` as well. Where several entries share a (`role`, `subrole`), a reference to `role.subrole` resolves to all of them.
+
 ### 7.8 Derivation dispositions
 
 | Code | Meaning |
@@ -657,6 +708,36 @@ The last four are not failures of the format. They are real and common postures,
 `raised` `contested` `withdrawn` `settled` `adjudicated`
 
 `withdrawn`, `settled` and `adjudicated` are **terminal** and REQUIRE a non-null `resolution`.
+
+### 7.10 Evidence roles
+
+`reference_recording` `demo` `live_recording` `cover_recording` `remix` `lead_sheet` `deposit_copy` `session_note` `correspondence`
+
+The set is open to additions by minor version and closed to a producer.
+
+`cover_recording` is a recording of this work by someone other than its writers. It is **evidence of the work, not a derivation of it** ([§6.5](#65-evidence-object)): a cover creates a new sound recording and a new ISRC, and changes nothing about the work, its ISWC or its splits. The distinction matters because a vocabulary that forced a cover into `derivation` would record every cover ever made as a claim against the work it covers.
+
+### 7.11 Work relations
+
+| Code | Meaning |
+| --- | --- |
+| `same_work` | The two documents describe one work. REQUIRES an attestation by a party. |
+| `candidate_same_work` | A match was computed and nobody has yet confirmed it. The strongest relation a machine may assert. |
+| `shares_material` | Material in common, but not the same work. Where this document is the one that took the material, the legal posture belongs in `derivation` ([§6.12](#612-derivation-object)), not here. |
+| `disputed_same_work` | A same-work assertion is contested. REQUIRES `dispute_id`. |
+
+### 7.12 Fingerprint disclosure classes
+
+| Code | What someone holding only the fingerprint can recover |
+| --- | --- |
+| `opaque` | Nothing legible. A coarse bucket key; an embedding with no published inversion. |
+| `approximate` | A degraded likeness — contour, rhythm, chord classes. Enough to recognise the work, not enough to perform it. |
+| `substantial` | A materially complete reconstruction of the component. |
+| `exact` | The component itself. MUST NOT be emitted under the `fingerprint` role ([WORK-068](#8-validation-rules)). |
+
+A class is a claim about the **best known attack**, not a proof. It MUST be revised downward when a better attack is published, and that revision is a new scheme document and a new `algorithm` version — never a silent reinterpretation of documents already in circulation, whose holders published on the strength of the old claim.
+
+**A scheme published without a disclosure analysis MUST declare `substantial`.** An analysis is either an argument from information content — an encoding too small to carry what would have to be recovered — or an attempted inversion, with its method and its result published. Absent either, untested is not the same as safe, and the default has to cost something or every scheme will claim `opaque` on the morning it is written.
 
 ---
 
@@ -704,7 +785,7 @@ This tiering exists because an earlier draft required every validator to impleme
 
 | ID | L | Rule |
 | --- | --- | --- |
-| `WORK-020` | 1 | The pair (`role`, `subrole`) MUST be unique within `content`. |
+| `WORK-020` | 1 | The pair (`role`, `subrole`) MUST be unique within `content`, except where `role` is `fingerprint`, in which case the triple (`role`, `subrole`, `algorithm`) MUST be unique. |
 | `WORK-021` | 1 | Every `digest` MUST match `<algorithm>:<lowercase-hex>` with a supported algorithm and correct length. |
 | `WORK-022` | 1 | `size` MUST be a non-negative integer. |
 | `WORK-023` | 1 | `confidence`, where present, MUST be within `0.0`–`1.0` inclusive. |
@@ -712,8 +793,12 @@ This tiering exists because an earlier draft required every validator to impleme
 | `WORK-025` | 1 | `attestations` MUST be ordered by `created`, ascending. |
 | `WORK-026` | 1 | Every `isrc`, where non-null, MUST be 12 alphanumeric characters. |
 | `WORK-027` | 2 | Every `attestor` MUST either equal a declared `party_id` or match the producer identifier grammar in [§6.16](#616-attestation-object). |
-| `WORK-028` | 2 | A component whose `role` is `fingerprint` MUST carry non-null `computed_over` and `algorithm`, and `computed_over` MUST resolve to another component. |
+| `WORK-028` | 2 | A component whose `role` is `fingerprint` MUST carry non-null `computed_over` and `algorithm`, and `computed_over` MUST resolve — against `content`, or against `evidence` where it carries the `evidence:` prefix ([§6.4](#64-content-component-object)). |
 | `WORK-029` | 1 | Every `content` `role` MUST be a member of [§7.7](#77-content-roles). |
+| `WORK-065` | 1 | Every `evidence` `role` MUST be a member of [§7.10](#710-evidence-roles). |
+| `WORK-066` | 1 | A component whose `role` is `fingerprint` MUST carry a non-null `subrole` that is a member of the fingerprint subroles in [§7.7](#77-content-roles). |
+| `WORK-067` | 1 | `disclosure` MUST be non-null and a member of [§7.12](#712-fingerprint-disclosure-classes) when `role` is `fingerprint`, and `null` otherwise. |
+| `WORK-068` | 1 | `disclosure` MUST NOT be `exact`. |
 
 **Rights**
 
@@ -749,6 +834,18 @@ This tiering exists because an earlier draft required every validator to impleme
 | `WORK-058` | 2 | `dispute_id` MUST be non-null when `disposition` is `disputed`, and every `dispute_id` reference MUST resolve. |
 | `WORK-059` | 1 | `resolution` MUST be non-null when a dispute's `status` is terminal, and `resolved_at` MUST NOT precede `raised_at`. |
 
+**Work relations**
+
+| ID | L | Rule |
+| --- | --- | --- |
+| `WORK-070` | 1 | Every `related_works` `relation` MUST be a member of [§7.11](#711-work-relations). |
+| `WORK-071` | 1 | At least one of `related_work_id`, `related_iswc` and `related_title` MUST be non-null. |
+| `WORK-072` | 1 | `score` MUST be `null` where `method` is `null`. |
+| `WORK-073` | 2 | `related_work_id`, where non-null, MUST NOT equal the document's own `work_id`. |
+| `WORK-074` | 2 | Every `matched_components` entry MUST resolve to a component in `content`. |
+| `WORK-075` | 2 | A `relation` of `same_work` MUST carry at least one attestation whose attestor is a party ([§6.16](#616-attestation-object)). |
+| `WORK-076` | 2 | `dispute_id` MUST be non-null when `relation` is `disputed_same_work` and `null` otherwise, and MUST resolve. |
+
 **Signatures and status**
 
 | ID | L | Rule |
@@ -780,7 +877,7 @@ Implementing this profile is OPTIONAL and is not required for `.work` conformanc
 
 ### 9.1 Conformant producer
 
-MUST emit documents satisfying every rule in [§8.1](#81-levels); MUST use JCS for canonicalisation; MUST NOT emit a `status` of `attested` without a valid signature; MUST NOT assert machine-derived values without provenance and confidence; MUST NOT omit a known dispute or an uncleared derivation in order to produce a conformant file, neither of which this specification treats as a defect.
+MUST emit documents satisfying every rule in [§8.1](#81-levels); MUST use JCS for canonicalisation; MUST NOT emit a `status` of `attested` without a valid signature; MUST NOT assert machine-derived values without provenance and confidence; MUST NOT assert a `related_works` relation of `same_work` on the strength of a computed score alone ([§6.22](#622-related-work-object)); MUST NOT publish a fingerprint whose `disclosure` class exceeds what the rightsholder has agreed to disclose; MUST NOT omit a known dispute or an uncleared derivation in order to produce a conformant file, neither of which this specification treats as a defect.
 
 ### 9.2 Conformant consumer
 
@@ -838,6 +935,8 @@ A work package contains personal data: legal names, IPI numbers, society affilia
 
 **Locators may embed identity.** `s3://mali-mccalla-archive/…` discloses a person's name to anyone holding the file. Producers SHOULD prefer digest-addressed locator paths.
 
+**A published fingerprint discloses part of the work.** [§6.4](#64-content-component-object) grades how much, per scheme, as a `disclosure` class ([§7.12](#712-fingerprint-disclosure-classes)). Publication is irrevocable in the same way distribution is: a fingerprint withdrawn from an index is still held by everyone who fetched it, and the material it approximates cannot be un-disclosed by deleting the entry. Producers SHOULD obtain the rightsholder's agreement to a named class before publishing, and SHOULD prefer `opaque` for candidate retrieval, reserving anything richer for a counterparty who has asked.
+
 ---
 
 ## 12. IANA considerations
@@ -883,7 +982,7 @@ Unresolved in `1.0.0-draft`:
 4. **`version_type` cannot express "original work containing a cleared interpolation".** CWR requires a choice between `ORI`, which discards the derivation, and `MOD`, which asserts the whole work is a version of the parent. `derivation.disposition` ([§6.12](#612-derivation-object)) now records the real posture, but it still cannot be projected.
 5. **No canonical form for `.workpkg` ZIP entries**, so a `.workpkg` is not itself reproducibly digestible.
 6. **The `$schema` host, the JSON-LD context IRI, the `vnd.invoke` media type and the `invoke.works` extension namespace are organisation-specific.** The `vnd.` tree denotes a vendor format. Publishing a context sharpens this: a context IRI is a permanent dependency on a host resolving, for the lifetime of every document that references it. Whether to move to a neutral host is open, and is better settled before the context ships than after.
-7. **Fingerprint interoperability is undefined.** [§6.4](#64-content-component-object) defines where a fingerprint lives and what it must not disclose, and says nothing about how two of them are compared. Without at least one named scheme, federated matching is a field rather than a capability.
+7. **Cross-scheme comparison is undefined.** [fingerprints/](fingerprints/) now names schemes and fixes a comparison function and a disclosure class for each, which is what an earlier draft lacked. It does not define how a `melodic-ngram` sketch is compared with an `embedding` vector, and the honest answer is that it cannot be — they are not the same kind of object. Federated matching works between holders who chose the same scheme and degrades to nothing between holders who did not. Whether the baseline scheme should be REQUIRED rather than merely named is open, and is the difference between a capability and a coincidence.
 8. **`disputes` and `registrations` both record conflict.** A society's `CO` acknowledgement is an overclaim dispute by another name. They are kept separate because one is a protocol state and the other is not, but the boundary is not obviously in the right place.
 
 ---
@@ -892,5 +991,6 @@ Unresolved in `1.0.0-draft`:
 
 | Version | Date | Change |
 | --- | --- | --- |
+| `1.0.0-draft` | 2026-10-03 | `related_works[]` added, with a `same_work` relation a machine may not assert. Evidence roles given a vocabulary and a normative test for evidence-versus-derivation. Fingerprint subroles enumerated; `disclosure` class added and the absolute one-way claim in §6.4 replaced with a graded one, because no publishable scheme satisfied it. `computed_over` may now name an `evidence` entry. Named fingerprint schemes published in [fingerprints/](fingerprints/). |
 | `1.0.0-draft` | 2026-10-03 | Validation levels L1/L2/L3 and a conformant L1 validator class. CWR width limits moved to a `CWR-` projection profile. `derivation.cleared` replaced by `disposition`; `disputes[]` added; `content` roles opened with `bassline`, `rhythm` and `fingerprint`; render consent split per right; `clearability.request` added; `totals_bps.valid` removed; attestor grammar made decidable; optional JSON-LD context defined. |
 | `1.0.0-draft` | 2026-09-05 | Initial draft, extracted from the design notes. |

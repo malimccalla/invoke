@@ -122,12 +122,33 @@
     ],
 
     "totals_bps": {
-      "ownership": { "pr": 9000, "mr": 10000, "sr": 10000 }
+      "ownership": { "pr": 10000, "mr": 10000, "sr": 10000 }
     }
   },
 
   "derivation": [],
-  "related_works": [],
+  "related_works": [
+    {
+      "relation": "same_work",
+      "related_work_id": "01JB000000000000000000OTHR",
+      "related_iswc": null,
+      "related_title": "Minimal (Other Registration)",
+      "related_locators": [],
+      "matched_components": [],
+      "method": "invoke:fp/melodic-ngram@1.0",
+      "score": 0.91,
+      "attestations": [
+        {
+          "claim": "work_is_same_work",
+          "attestor": "invoke:pipeline/cover-id@0.3.1",
+          "created": "2026-09-05T00:00:00Z",
+          "confidence": 0.91
+        }
+      ],
+      "dispute_id": null,
+      "note": "Promoted to same_work on the strength of the score alone. No party has confirmed it."
+    }
+  ],
   "clearances": [],
   "mandates": [],
   "clearability": null,

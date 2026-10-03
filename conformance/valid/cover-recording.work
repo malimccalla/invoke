@@ -1,0 +1,286 @@
+{
+  "$schema": "https://invoke.works/schema/work/v1",
+  "spec_version": "1.0.0",
+
+  "work_id": "01JD000000000000000000CVRS",
+  "version": 2,
+  "parent": "sha256:4c1f0b9e73a2d85106fc3b7e49d02a6815be70c3f49d1a8276e0bc53af914d20",
+  "created_at": "2026-09-30T00:00:00Z",
+  "status": "draft",
+
+  "identity": {
+    "iswc": "T-123.456.789-4",
+    "submitter_work_number": "CVR0000000001",
+    "title": "Low Tide",
+    "alternative_titles": [],
+    "language": "eng",
+    "duration_ms": 198000,
+    "version_type": "ORI",
+    "music_arrangement": null,
+    "lyric_adaptation": null,
+    "distribution_category": "POP",
+    "text_music_relationship": "MTX",
+    "composite_type": null,
+    "excerpt_type": null,
+    "recorded_indicator": true,
+    "grand_rights_ind": false,
+    "created_year": 2025
+  },
+
+  "musical_attributes": {
+    "key": "D major",
+    "tempo_bpm": 128,
+    "metre": "4/4",
+    "derived": true,
+    "confidence": 0.88
+  },
+
+  "content": [
+    {
+      "role": "melody",
+      "subrole": null,
+      "media_type": "audio/midi",
+      "digest": "sha256:5a92c0e7418bd36f0127ae59c840d3b761fc05ae92d7b4310e8ac65f2d019b34",
+      "size": 6218,
+      "derived": true,
+      "attested_by": "01JD000000000000000000WRTR",
+      "computed_over": null,
+      "algorithm": null,
+      "disclosure": null,
+      "locators": []
+    },
+    {
+      "role": "lyrics",
+      "subrole": null,
+      "media_type": "text/plain; charset=utf-8",
+      "digest": "sha256:c0a74e1b58d93f26015be7c4a2308df9617cb40e85d2fa7360be19c4f5a2d738",
+      "size": 2410,
+      "derived": false,
+      "attested_by": "01JD000000000000000000WRTR",
+      "computed_over": null,
+      "algorithm": null,
+      "disclosure": null,
+      "locators": []
+    },
+    {
+      "role": "fingerprint",
+      "subrole": "melodic",
+      "media_type": "application/octet-stream",
+      "digest": "sha256:9e07b3c1452ad86f0319ce74b805d2fa61c70e8b4d93f2570ae1bc6309d4a825",
+      "size": 1040,
+      "derived": true,
+      "attested_by": null,
+      "computed_over": "melody",
+      "algorithm": "invoke:fp/melodic-ngram@1.0",
+      "disclosure": "substantial",
+      "locators": []
+    },
+    {
+      "role": "fingerprint",
+      "subrole": "lyric",
+      "media_type": "application/octet-stream",
+      "digest": "sha256:1b64f09ad78c2e35017bae94c306d8f249e70c15b83da627409fe1c85b7d0362",
+      "size": 1040,
+      "derived": true,
+      "attested_by": null,
+      "computed_over": "lyrics",
+      "algorithm": "invoke:fp/lyric-shingle@1.0",
+      "disclosure": "substantial",
+      "locators": []
+    }
+  ],
+
+  "evidence": [
+    {
+      "role": "reference_recording",
+      "subrole": null,
+      "media_type": "audio/wav",
+      "digest": "sha256:73e0ba95108cf2d64a1b7e3c9205df8461ca07e3b95d12f840ae6c3b17950dc2",
+      "size": 41203844,
+      "derived": false,
+      "attested_by": "01JD000000000000000000WRTR",
+      "isrc": "GBAAA2500119",
+      "recorded_at": "2025-11-04",
+      "attestations": [
+        {
+          "claim": "recording_embodies_work",
+          "attestor": "01JD000000000000000000WRTR",
+          "created": "2025-11-05T09:00:00Z"
+        }
+      ],
+      "locators": []
+    },
+    {
+      "role": "demo",
+      "subrole": null,
+      "media_type": "audio/mp4",
+      "digest": "sha256:aa15c7e0392bd648017fe3c95b204da7681ce09b47f3a2d510be7c48a3091f65",
+      "size": 3840112,
+      "derived": false,
+      "attested_by": "01JD000000000000000000WRTR",
+      "isrc": null,
+      "recorded_at": "2025-08-17",
+      "attestations": [
+        {
+          "claim": "recording_embodies_work",
+          "attestor": "01JD000000000000000000WRTR",
+          "created": "2025-11-05T09:01:00Z",
+          "note": "Voice memo. One guitar, one vocal, no click. Predates the master by three months."
+        }
+      ],
+      "locators": []
+    },
+    {
+      "role": "cover_recording",
+      "subrole": null,
+      "media_type": "audio/flac",
+      "digest": "sha256:d3b805f1649ca27e0158be3d947c06af2e71bc50d839f24610ae7c95b2038d47",
+      "size": 27551208,
+      "derived": false,
+      "attested_by": "01JD000000000000000000WRTR",
+      "isrc": "USAAA2600733",
+      "recorded_at": "2026-07-12",
+      "attestations": [
+        {
+          "claim": "recording_embodies_work",
+          "attestor": "invoke:pipeline/cover-id@0.3.1",
+          "created": "2026-09-28T22:14:07Z",
+          "confidence": 0.91,
+          "note": "Fused 0.91 over melodic 0.74 and lyric 0.93. Transposed up a fourth, taken at roughly two thirds tempo, acoustic arrangement, different vocalist. No spectral fingerprint overlap with the reference master whatsoever."
+        },
+        {
+          "claim": "recording_embodies_work",
+          "attestor": "01JD000000000000000000WRTR",
+          "created": "2026-09-29T11:30:00Z",
+          "note": "Confirmed. Licensed cover, new master, new ISRC. The work is unchanged: same ISWC, same writers, same split."
+        }
+      ],
+      "locators": []
+    }
+  ],
+
+  "renders": [],
+
+  "rights": {
+    "parties": [
+      {
+        "party_id": "01JD000000000000000000WRTR",
+        "canonical_party_id": null,
+        "type": "natural_person",
+        "last_name": "Okafor",
+        "first_name": "Ada",
+        "ipi_name_number": null,
+        "ipi_base_number": null,
+        "isni": null,
+        "ddex_party_id": null,
+        "societies": { "pr": null, "mr": null, "sr": null }
+      },
+      {
+        "party_id": "01JD000000000000000000PBSH",
+        "canonical_party_id": null,
+        "type": "legal_entity",
+        "name": "Low Tide Songs Ltd",
+        "ipi_name_number": null,
+        "ipi_base_number": null,
+        "isni": null,
+        "ddex_party_id": null,
+        "societies": { "pr": null, "mr": null, "sr": null }
+      }
+    ],
+
+    "credits": [
+      {
+        "credit_id": "c-001",
+        "party_id": "01JD000000000000000000WRTR",
+        "writer_designation": "CA",
+        "controlled": true,
+        "cwr_record": "SWR",
+        "agreement_id": "agr-001",
+        "ownership_bps": { "pr": 5000, "mr": 5000, "sr": 5000 },
+        "effective_from": "2025-06-01",
+        "effective_to": null,
+        "territory_claims": [
+          {
+            "tis_code": 2136,
+            "tis_name": "World",
+            "indicator": "I",
+            "collection_bps": { "pr": 5000, "mr": 5000, "sr": 5000 }
+          }
+        ]
+      },
+      {
+        "credit_id": "c-002",
+        "party_id": "01JD000000000000000000PBSH",
+        "publisher_type": "E",
+        "controlled": true,
+        "cwr_record": "SPU",
+        "agreement_id": "agr-001",
+        "publisher_sequence": 1,
+        "ownership_bps": { "pr": 5000, "mr": 5000, "sr": 5000 },
+        "effective_from": "2025-06-01",
+        "effective_to": null,
+        "territory_claims": [
+          {
+            "tis_code": 2136,
+            "tis_name": "World",
+            "indicator": "I",
+            "collection_bps": { "pr": 5000, "mr": 5000, "sr": 5000 }
+          }
+        ]
+      }
+    ],
+
+    "publisher_for_writer": [
+      { "writer_credit_id": "c-001", "publisher_credit_id": "c-002" }
+    ],
+
+    "agreements": [
+      {
+        "agreement_id": "agr-001",
+        "agreement_type": "OS",
+        "assignor_party_id": "01JD000000000000000000WRTR",
+        "assignee_party_id": "01JD000000000000000000PBSH",
+        "start_date": "2025-06-01",
+        "end_date": null,
+        "retention_end_date": null,
+        "post_term_collection_end_date": null,
+        "prior_royalty_status": "N",
+        "sales_manufacture_clause": null,
+        "admin_commission_bps": null,
+        "document_digest": null
+      }
+    ],
+
+    "totals_bps": {
+      "ownership": { "pr": 10000, "mr": 10000, "sr": 10000 }
+    }
+  },
+
+  "derivation": [],
+  "related_works": [],
+  "clearances": [],
+  "mandates": [],
+  "clearability": null,
+  "disputes": [],
+  "registrations": [],
+
+  "provenance_log": {
+    "digest": "sha256:60f1b4ca7382de95017ac6b4e2309df5618ce70a4b93d2f8507ae1c6b4930f27",
+    "media_type": "application/jsonl",
+    "locators": []
+  },
+  "provenance_recent": [
+    {
+      "at": "2026-09-28T22:14:07Z",
+      "actor": "invoke:pipeline/cover-id@0.3.1",
+      "action": "matched",
+      "target": "evidence.cover_recording",
+      "from": "content.fingerprint.melodic",
+      "confidence": 0.91,
+      "note": "Candidate recording matched against this work. Emitted as a candidate for review; the evidence entry was written only after the writer confirmed."
+    }
+  ],
+
+  "timestamps": [],
+  "signatures": []
+}
